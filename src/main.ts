@@ -17,7 +17,7 @@ const $workspace      = document.getElementById('workspace')      as HTMLElement
 const $divider        = document.getElementById('divider')        as HTMLElement
 
 // ── Persistence keys ──────────────────────────────────────────────────
-const LS_COLLAPSED  = 'markdown-pro:toolbar-collapsed'
+const LS_COLLAPSED  = 'markdown-pro:toolbar-collapsed:v1.2'
 const LS_STATUSBAR  = 'markdown-pro:statusbar'
 
 // ── State ─────────────────────────────────────────────────────────────

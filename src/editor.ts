@@ -55,38 +55,41 @@ function makeThemeExtension(): Extension {
       background: 'var(--ed-sel) !important',
     },
     '&.cm-focused .cm-selectionBackground': {
-      background: 'var(--ed-sel-focused) !important',
+      background: 'var(--ed-sel-f) !important',
     },
-    '.cm-activeLine': { background: 'var(--ed-active-line)' },
+    '.cm-activeLine': { background: 'var(--ed-active)' },
     '.cm-gutters': { display: 'none' },
     '.cm-activeLineGutter': { display: 'none' },
   })
 
   const highlight = HighlightStyle.define([
-    {
-      tag: [tags.heading1, tags.heading2, tags.heading3,
-            tags.heading4, tags.heading5, tags.heading6],
-      color: 'var(--syn-h)', fontWeight: '700',
-    },
-    { tag: tags.heading1, fontSize: '1.4em' },
-    { tag: tags.heading2, fontSize: '1.25em' },
-    { tag: tags.heading3, fontSize: '1.1em' },
-    { tag: tags.strong, fontWeight: '700', color: 'var(--syn-strong)' },
-    { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--syn-em)' },
-    { tag: tags.strikethrough, textDecoration: 'line-through' },
-    { tag: tags.link, color: 'var(--syn-link)', textDecoration: 'underline' },
-    { tag: tags.url, color: 'var(--syn-link)' },
-    {
-      tag: tags.monospace,
-      fontFamily: 'var(--ed-mono)',
-      color: 'var(--syn-code)',
-    },
-    { tag: tags.quote, color: 'var(--syn-quote)', fontStyle: 'italic' },
-    { tag: tags.list, color: 'var(--syn-list)' },
-    { tag: tags.meta, color: 'var(--syn-meta)', opacity: '0.7' },
-    { tag: tags.processingInstruction, color: 'var(--syn-meta)' },
+    // Per-level heading colours so H1/H2/H3 stand out from each other.
+    // HighlightStyle uses the most-specific tag match, so per-level rules
+    // override the generic heading rule below.
+    { tag: tags.heading1, color: 'var(--syn-h1)', fontWeight: '700', fontSize: '1.4em' },
+    { tag: tags.heading2, color: 'var(--syn-h2)', fontWeight: '700', fontSize: '1.25em' },
+    { tag: tags.heading3, color: 'var(--syn-h3)', fontWeight: '700', fontSize: '1.1em' },
+    { tag: [tags.heading4, tags.heading5, tags.heading6],
+      color: 'var(--syn-h)', fontWeight: '700' },
+    // Inline styles
+    { tag: tags.strong,        fontWeight: '700', color: 'var(--syn-strong)' },
+    { tag: tags.emphasis,      fontStyle: 'italic', color: 'var(--syn-em)' },
+    { tag: tags.strikethrough, textDecoration: 'line-through', color: 'var(--syn-em)' },
+    // Links and URLs
+    { tag: tags.link,          color: 'var(--syn-link)', textDecoration: 'underline' },
+    { tag: tags.url,           color: 'var(--syn-link)' },
+    // Inline code — monospace + red
+    { tag: tags.monospace,     fontFamily: 'var(--ed-mono)', color: 'var(--syn-code)',
+      background: 'transparent' },
+    // Block elements
+    { tag: tags.quote,         color: 'var(--syn-quote)', fontStyle: 'italic' },
+    { tag: tags.list,          color: 'var(--syn-list)' },
     { tag: tags.contentSeparator, color: 'var(--syn-hr)' },
-    { tag: tags.comment, color: 'var(--syn-quote)', fontStyle: 'italic' },
+    // Formatting markers (**, __, #, ```) — dimmed so the content reads first
+    { tag: tags.punctuation,   color: 'var(--syn-fmt)', opacity: '0.55' },
+    // Meta / processing instructions
+    { tag: [tags.meta, tags.processingInstruction], color: 'var(--syn-meta)' },
+    { tag: tags.comment,       color: 'var(--syn-quote)', fontStyle: 'italic' },
   ])
 
   return [base, syntaxHighlighting(highlight)]
