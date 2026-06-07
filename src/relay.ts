@@ -24,9 +24,29 @@ export function initRelay(params: {
   onReady: () => void
   onThemesChange: () => void
 }): void {
+  // SN activates themes by appending <link rel="stylesheet"> to <head>.
+  // The ComponentRelay fires onThemesChange BEFORE the network request
+  // completes, so getComputedStyle still returns empty strings for the
+  // SN vars at that point.  Observe the head for new link elements and
+  // re-fire onThemesChange only after each stylesheet has actually loaded.
+  const observer = new MutationObserver(mutations => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node instanceof HTMLLinkElement && node.rel === 'stylesheet') {
+          node.addEventListener('load',  params.onThemesChange, { once: true })
+          node.addEventListener('error', params.onThemesChange, { once: true })
+        }
+      }
+    }
+  })
+  observer.observe(document.head, { childList: true })
+
   _relay = new ComponentRelay({
     targetWindow: window,
     onReady: params.onReady,
+    // Keep the relay callback too — it's a no-op if the stylesheet hasn't
+    // loaded yet (updateTheme falls back to prefers-color-scheme), and the
+    // observer fires again with the correct values once the link loads.
     onThemesChange: params.onThemesChange,
     handleRequestForContentHeight: () =>
       document.getElementById('app')?.clientHeight,

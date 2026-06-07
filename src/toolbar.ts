@@ -6,6 +6,7 @@ export interface ToolbarOptions {
   editor: Editor
   onModeChange: (mode: EditorMode) => void
   onCollapseToggle: (collapsed: boolean) => void
+  onStatusBarToggle: (visible: boolean) => void
 }
 
 // ── SVG icons (inline, no external font dependency) ───────────────────
@@ -21,6 +22,10 @@ const ICON_UL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" str
 const ICON_OL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>`
 const ICON_TASK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`
 const ICON_TABLE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`
+// Status bar toggle: a rectangle with a bottom bar highlighted
+const ICON_STATUSBAR = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="17" x2="21" y2="17"/></svg>`
+// Collapse toggle: chevron-up
+const ICON_CHEVRON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`
 
 // ── Format button descriptor ──────────────────────────────────────────
 interface FmtButtonDef {
@@ -35,6 +40,8 @@ type FmtItem = FmtButtonDef | 'sep'
 export class Toolbar {
   private currentMode: EditorMode = 'split'
   private collapsed = false
+  private statusBarVisible = true
+  private statusBarBtn: HTMLButtonElement | null = null
   private readonly modeButtons: Partial<Record<EditorMode, HTMLButtonElement>> = {}
 
   constructor(
@@ -164,17 +171,34 @@ export class Toolbar {
       )
     }
 
-    // Spacer + collapse toggle ────────────────────────────────────────
+    // Spacer + right-side icon buttons ────────────────────────────────
     const spacer = document.createElement('div')
     spacer.className = 'toolbar-spacer'
     this.container.appendChild(spacer)
 
+    // Status bar toggle button
+    const statusBarBtn = document.createElement('button')
+    statusBarBtn.className = 'toolbar-icon-btn'
+    statusBarBtn.title = 'Toggle word count'
+    statusBarBtn.setAttribute('aria-label', 'Toggle word count')
+    statusBarBtn.setAttribute('aria-pressed', String(this.statusBarVisible))
+    statusBarBtn.innerHTML = ICON_STATUSBAR
+    statusBarBtn.classList.toggle('active', this.statusBarVisible)
+    statusBarBtn.addEventListener('click', () => {
+      this.statusBarVisible = !this.statusBarVisible
+      statusBarBtn.setAttribute('aria-pressed', String(this.statusBarVisible))
+      statusBarBtn.classList.toggle('active', this.statusBarVisible)
+      this.opts.onStatusBarToggle(this.statusBarVisible)
+    })
+    this.statusBarBtn = statusBarBtn
+    this.container.appendChild(statusBarBtn)
+
+    // Collapse toggle button
     const toggleBtn = document.createElement('button')
     toggleBtn.className = 'toolbar-toggle-btn'
     toggleBtn.title = 'Toggle toolbar'
     toggleBtn.setAttribute('aria-label', 'Toggle toolbar')
-    // Chevron-up icon — rotates 180° via CSS when collapsed
-    toggleBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`
+    toggleBtn.innerHTML = ICON_CHEVRON
     toggleBtn.addEventListener('click', () => {
       this.collapsed = !this.collapsed
       this.container.classList.toggle('collapsed', this.collapsed)
@@ -188,6 +212,14 @@ export class Toolbar {
   setCollapsed(collapsed: boolean): void {
     this.collapsed = collapsed
     this.container.classList.toggle('collapsed', collapsed)
+  }
+
+  setStatusBarVisible(visible: boolean): void {
+    this.statusBarVisible = visible
+    if (this.statusBarBtn) {
+      this.statusBarBtn.setAttribute('aria-pressed', String(visible))
+      this.statusBarBtn.classList.toggle('active', visible)
+    }
   }
 
   setMode(mode: EditorMode): void {

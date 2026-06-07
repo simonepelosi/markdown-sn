@@ -3,101 +3,95 @@
 @import 'highlight.js/styles/github.css';
 
 /* ── CSS variables ─────────────────────────────────────────────────── */
+/*
+ * Surface colours reference SN stylekit vars directly.
+ * When SN injects a theme stylesheet that defines those vars on :root,
+ * every property that uses them here updates automatically — no JS needed.
+ * The fallback literals are used only when the plugin is opened outside SN
+ * or before any theme has been activated.
+ */
 :root {
+  /* Layout */
   --toolbar-h:           42px;
   --toolbar-collapsed-h: 28px;
   --statusbar-h:         26px;
   --divider-w:           5px;
   --radius:              4px;
 
-  /* Light defaults — overridden by JS from SN theme vars */
-  --bg:            #ffffff;
-  --bg2:           #f7f7f8;
-  --bg3:           #ececed;
-  --fg:            #1a1a2e;
-  --fg2:           #52525b;
-  --fg3:           #9ca3af;
-  --border:        #e4e4e7;
-  --accent:        #2563eb;
-  --accent-hover:  #1d4ed8;
-  --accent-fg:     #ffffff;
+  /* Fonts — SN stylekit provides these directly */
+  --ed-font: var(--sn-stylekit-sans-serif-font,  ui-sans-serif, system-ui, sans-serif);
+  --ed-mono: var(--sn-stylekit-monospace-font,   ui-monospace, 'Cascadia Code', monospace);
+  --ed-size: 15px;
+
+  /* === Surface colours: SN vars with light-mode fallbacks ============ */
+  --bg:     var(--sn-stylekit-background-color,           #ffffff);
+  --bg2:    var(--sn-stylekit-contrast-background-color,  #f7f7f8);
+  --bg3:    var(--sn-stylekit-secondary-background-color, #ececed);
+  --fg:     var(--sn-stylekit-foreground-color,           #1a1a2e);
+  --fg2:    var(--sn-stylekit-contrast-foreground-color,  #52525b);
+  --fg3:    var(--sn-stylekit-neutral-color,              #9ca3af);
+  --border: var(--sn-stylekit-border-color,               #e4e4e7);
+  --accent: var(--sn-stylekit-info-color,                 #2563eb);
+
+  /* No SN equivalent; overridden in .dark */
+  --accent-hover: #1d4ed8;
+  --accent-fg:    #ffffff;
 
   /* Editor surface */
-  --ed-bg:         #ffffff;
-  --ed-fg:         #1a1a2e;
-  --ed-cursor:     #1a1a2e;
-  --ed-sel:        rgba(37,99,235,.18);
-  --ed-sel-f:      rgba(37,99,235,.28);
-  --ed-active:     rgba(0,0,0,.03);
-  --ed-font:       var(--sn-stylekit-sans-serif-font, ui-sans-serif, system-ui, sans-serif);
-  --ed-mono:       var(--sn-stylekit-monospace-font, ui-monospace, 'Cascadia Code', monospace);
-  --ed-size:       15px;
+  --ed-bg:     var(--sn-stylekit-editor-background-color, var(--bg));
+  --ed-fg:     var(--sn-stylekit-editor-foreground-color, var(--fg));
+  --ed-cursor: var(--ed-fg);
+  --ed-sel:    rgba(37, 99, 235, .18);
+  --ed-sel-f:  rgba(37, 99, 235, .28);
+  --ed-active: rgba(0, 0, 0, .03);
 
   /* Preview surface */
-  --pv-bg:         #f9fafb;
-  --pv-fg:         #111827;
-  --pv-heading:    #111827;
-  --pv-link:       #2563eb;
-  --pv-code-fg:    #dc2626;
-  --pv-code-bg:    #f3f4f6;
-  --pv-pre-bg:     #f3f4f6;
-  --pv-bq-border:  #e5e7eb;
-  --pv-bq-text:    #6b7280;
-  --pv-tbl-border: #e5e7eb;
-  --pv-hr:         #e5e7eb;
+  --pv-bg:        var(--sn-stylekit-background-color,     #f9fafb);
+  --pv-fg:        var(--sn-stylekit-paragraph-text-color,
+                    var(--sn-stylekit-editor-foreground-color, #111827));
+  --pv-heading:   var(--sn-stylekit-foreground-color,     #111827);
+  --pv-link:      var(--sn-stylekit-info-color,           #2563eb);
+  --pv-code-fg:   #dc2626;
+  --pv-code-bg:   #f3f4f6;
+  --pv-pre-bg:    #f3f4f6;
+  --pv-bq-border: var(--sn-stylekit-border-color,         #e5e7eb);
+  --pv-bq-text:   var(--sn-stylekit-neutral-color,        #6b7280);
+  --pv-tbl-border: var(--sn-stylekit-border-color,        #e5e7eb);
+  --pv-hr:        var(--sn-stylekit-border-color,         #e5e7eb);
 
-  /* Syntax tokens (CodeMirror) */
-  --syn-h:         #111827;
-  --syn-strong:    #111827;
-  --syn-em:        #374151;
-  --syn-link:      #2563eb;
-  --syn-code:      #dc2626;
-  --syn-quote:     #6b7280;
-  --syn-list:      #374151;
-  --syn-meta:      #9ca3af;
-  --syn-hr:        #d1d5db;
+  /* CodeMirror syntax token colours */
+  --syn-h:      var(--sn-stylekit-foreground-color,           #111827);
+  --syn-strong: var(--sn-stylekit-foreground-color,           #111827);
+  --syn-em:     var(--sn-stylekit-contrast-foreground-color,  #374151);
+  --syn-link:   var(--sn-stylekit-info-color,                 #2563eb);
+  --syn-code:   #dc2626;
+  --syn-quote:  var(--sn-stylekit-neutral-color,              #6b7280);
+  --syn-list:   var(--sn-stylekit-contrast-foreground-color,  #374151);
+  --syn-meta:   var(--sn-stylekit-neutral-color,              #9ca3af);
+  --syn-hr:     var(--sn-stylekit-border-color,               #d1d5db);
 }
 
+/*
+ * .dark overrides ONLY vars that have no SN equivalent or that derive
+ * from colours SN doesn't expose (selection overlays, code block tints,
+ * accent contrast).  Surface colours (--bg, --fg, --bg2, etc.) are NOT
+ * listed here because they already reference SN vars; SN's dark theme
+ * stylesheet defines those vars on :root and the cascade handles the rest.
+ */
 .dark {
-  --bg:            #18181b;
-  --bg2:           #27272a;
-  --bg3:           #3f3f46;
-  --fg:            #e4e4e7;
-  --fg2:           #a1a1aa;
-  --fg3:           #71717a;
-  --border:        #3f3f46;
-  --accent:        #60a5fa;
-  --accent-hover:  #93c5fd;
-  --accent-fg:     #0f172a;
+  --bg3:        #3f3f46;   /* tertiary surface — no SN var */
+  --accent-hover: #93c5fd;
+  --accent-fg:    #0f172a;
 
-  --ed-bg:         #18181b;
-  --ed-fg:         #e4e4e7;
-  --ed-cursor:     #e4e4e7;
-  --ed-sel:        rgba(96,165,250,.20);
-  --ed-sel-f:      rgba(96,165,250,.30);
-  --ed-active:     rgba(255,255,255,.03);
+  --ed-sel:    rgba(96, 165, 250, .20);
+  --ed-sel-f:  rgba(96, 165, 250, .30);
+  --ed-active: rgba(255, 255, 255, .03);
 
-  --pv-bg:         #1c1c1f;
-  --pv-fg:         #e4e4e7;
-  --pv-heading:    #f4f4f5;
-  --pv-link:       #60a5fa;
-  --pv-code-fg:    #f87171;
-  --pv-code-bg:    #27272a;
-  --pv-pre-bg:     #27272a;
-  --pv-bq-border:  #3f3f46;
-  --pv-bq-text:    #a1a1aa;
-  --pv-tbl-border: #3f3f46;
-  --pv-hr:         #3f3f46;
+  --pv-code-fg: #f87171;
+  --pv-code-bg: var(--bg2);
+  --pv-pre-bg:  var(--bg2);
 
-  --syn-h:         #f4f4f5;
-  --syn-strong:    #f4f4f5;
-  --syn-em:        #e4e4e7;
-  --syn-link:      #60a5fa;
-  --syn-code:      #f87171;
-  --syn-quote:     #a1a1aa;
-  --syn-list:      #e4e4e7;
-  --syn-meta:      #71717a;
-  --syn-hr:        #3f3f46;
+  --syn-code: #f87171;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
@@ -106,10 +100,12 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  font-family: var(--ed-font);
-  font-size: var(--ed-size);
   background: var(--bg);
   color: var(--fg);
+  font-family: var(--ed-font);
+  font-size: var(--ed-size);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── App ───────────────────────────────────────────────────────────── */
@@ -119,7 +115,6 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: var(--bg);
-  color: var(--fg);
 }
 
 /* ── Toolbar ───────────────────────────────────────────────────────── */
@@ -129,20 +124,14 @@ html, body {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 10px;
+  padding: 0 8px;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   overflow: hidden;
-  user-select: none;
-  /* Smooth collapse/expand */
-  transition: height 0.2s ease, flex-basis 0.2s ease;
 }
 
 /* Collapsed: shrink to toggle-button height, hide everything else */
-#toolbar.collapsed {
-  height: var(--toolbar-collapsed-h);
-  flex-basis: var(--toolbar-collapsed-h);
-}
+#toolbar.collapsed { flex-basis: var(--toolbar-collapsed-h); height: var(--toolbar-collapsed-h); }
 #toolbar.collapsed > :not(.toolbar-toggle-btn) {
   display: none;
 }
@@ -172,17 +161,17 @@ html, body {
 }
 
 .mode-btn {
-  background: none;
-  border: none;
-  border-right: 1px solid var(--border);
   padding: 4px 10px;
   font-size: 12px;
-  font-family: inherit;
+  font-family: var(--ed-font);
+  font-weight: 500;
   color: var(--fg2);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
   cursor: pointer;
-  line-height: 1;
+  transition: background .12s, color .12s;
   white-space: nowrap;
-  transition: background .1s, color .1s;
 }
 .mode-btn:last-child { border-right: none; }
 .mode-btn:hover      { background: var(--bg3); color: var(--fg); }
@@ -193,73 +182,93 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
+  width: 28px;
   height: 28px;
-  background: none;
+  padding: 0;
+  color: var(--fg2);
+  background: transparent;
   border: none;
   border-radius: var(--radius);
-  color: var(--fg2);
   cursor: pointer;
-  font-size: 13px;
-  font-family: inherit;
-  transition: background .1s, color .1s;
-  flex-shrink: 0;
+  transition: background .12s, color .12s;
 }
 .fmt-btn:hover  { background: var(--bg3); color: var(--fg); }
 .fmt-btn svg    { pointer-events: none; }
+
+/* Toolbar icon buttons (statusbar toggle, collapse toggle) */
+.toolbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--fg3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+  flex-shrink: 0;
+  position: relative;
+}
+.toolbar-icon-btn:hover { color: var(--fg); }
+.toolbar-icon-btn.active { color: var(--accent); }
 
 /* Toolbar collapse toggle — always last child, never hidden */
 .toolbar-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 26px;
   height: 26px;
-  background: none;
+  padding: 0;
+  color: var(--fg3);
+  background: transparent;
   border: none;
   border-radius: var(--radius);
-  color: var(--fg3);
   cursor: pointer;
+  transition: color .12s;
   flex-shrink: 0;
-  transition: color .1s;
+  position: relative;
 }
 .toolbar-toggle-btn:hover { color: var(--fg); }
 
 /* ── Workspace ─────────────────────────────────────────────────────── */
 #workspace {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
-  min-height: 0;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* ── Editor pane ───────────────────────────────────────────────────── */
 #editor-pane {
-  flex: 1;
+  flex: 1 1 50%;
   min-width: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: var(--ed-bg);
 }
 
 /* CodeMirror overrides — use our CSS vars */
 #editor-pane .cm-editor {
   height: 100%;
-  outline: none;
+  background: var(--ed-bg);
+  color: var(--ed-fg);
+  font-family: var(--ed-font);
   font-size: var(--ed-size);
 }
 #editor-pane .cm-editor.cm-focused { outline: none !important; }
 #editor-pane .cm-scroller {
   overflow: auto;
-  height: 100%;
-  font-family: var(--ed-mono);
-  line-height: 1.75;
+  font-family: var(--ed-font) !important;
+  line-height: 1.7;
 }
 #editor-pane .cm-content {
   padding: 20px 24px;
+  min-height: 100%;
   caret-color: var(--ed-cursor);
-  color: var(--ed-fg);
 }
 #editor-pane .cm-line { padding: 0; }
 #editor-pane .cm-cursor,
@@ -277,29 +286,26 @@ html, body {
   background: var(--border);
   cursor: col-resize;
   transition: background .15s;
-  user-select: none;
+  z-index: 1;
 }
 #divider:hover,
 #divider.dragging { background: var(--accent); }
 
 /* ── Preview pane ──────────────────────────────────────────────────── */
 #preview-pane {
-  flex: 1;
+  flex: 1 1 50%;
   min-width: 0;
   overflow-y: auto;
   background: var(--pv-bg);
-  color: var(--pv-fg);
-  display: flex;
-  flex-direction: column;
+  border-left: 1px solid var(--border);
 }
 
 .preview-content {
-  width: 100%;
-  padding: 24px 28px;
-  font-family: var(--ed-font);
-  font-size: 15.5px;
-  line-height: 1.8;
+  padding: 20px 24px;
   color: var(--pv-fg);
+  font-family: var(--ed-font);
+  font-size: var(--ed-size);
+  line-height: 1.7;
 }
 
 /* Preview typography */
@@ -310,10 +316,9 @@ html, body {
 .preview-content h5,
 .preview-content h6 {
   color: var(--pv-heading);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
-  margin-top: 1.75em;
-  margin-bottom: 0.5em;
+  margin: 1.25em 0 .5em;
 }
 .preview-content h1 { font-size: 1.875em; margin-top: 0; border-bottom: 2px solid var(--pv-hr); padding-bottom: .3em; }
 .preview-content h2 { font-size: 1.5em;   border-bottom: 1px solid var(--pv-hr); padding-bottom: .2em; }
@@ -328,8 +333,7 @@ html, body {
 
 .preview-content a {
   color: var(--pv-link);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
 }
 .preview-content a:hover { opacity: .8; }
 
@@ -342,11 +346,10 @@ html, body {
 .preview-content .task-list-item input[type='checkbox'] { margin-right: .4em; accent-color: var(--accent); }
 
 .preview-content blockquote {
+  border-left: 3px solid var(--pv-bq-border);
   margin: 1em 0;
   padding: .5em 1em;
-  border-left: 4px solid var(--pv-bq-border);
   color: var(--pv-bq-text);
-  font-style: italic;
   background: var(--bg2);
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -362,19 +365,20 @@ html, body {
 }
 
 .preview-content pre {
-  margin: 1em 0;
-  padding: 1em 1.25em;
   background: var(--pv-pre-bg);
   border-radius: var(--radius);
+  margin: 1em 0;
   overflow-x: auto;
   border: 1px solid var(--border);
 }
 .preview-content pre code {
+  display: block;
+  padding: 1em;
+  background: transparent;
   color: inherit;
-  background: none;
-  padding: 0;
   font-size: .875em;
   line-height: 1.6;
+  border-radius: 0;
 }
 
 /* Tables */
@@ -391,7 +395,7 @@ html, body {
 .math-inline  { display: inline; }
 .math-error   { color: var(--pv-code-fg); font-family: var(--ed-mono); font-size: .875em; opacity: .7; }
 
-/* HLjs dark mode override — applied when .dark is set on html */
+/* HLjs dark mode override — applied when .dark is set on <html> */
 .dark .hljs            { background: var(--pv-pre-bg); color: #abb2bf; }
 .dark .hljs-comment,
 .dark .hljs-meta       { color: #7c8db8; }
@@ -402,7 +406,7 @@ html, body {
 .dark .hljs-number     { color: #d19a66; }
 .dark .hljs-built_in   { color: #61afef; }
 .dark .hljs-title,
-.dark .hljs-class\\.name { color: #61afef; }
+.dark .hljs-class\.name { color: #61afef; }
 .dark .hljs-type       { color: #e5c07b; }
 
 /* ── Status bar ────────────────────────────────────────────────────── */
@@ -416,10 +420,12 @@ html, body {
   background: var(--bg2);
   border-top: 1px solid var(--border);
   font-size: 11.5px;
+  font-family: var(--ed-font);
   color: var(--fg3);
   user-select: none;
   gap: 12px;
 }
+#app.statusbar-hidden #statusbar { display: none; }
 .statusbar-left, .statusbar-right { display: flex; align-items: center; gap: 12px; }
 .statusbar-item { white-space: nowrap; }
 

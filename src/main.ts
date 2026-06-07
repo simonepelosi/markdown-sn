@@ -7,6 +7,7 @@ import { renderMarkdown, extractPreviewPlain } from './preview'
 import { Toolbar } from './toolbar'
 
 // ── DOM refs ──────────────────────────────────────────────────────────
+const $app           = document.getElementById('app')           as HTMLElement
 const $editorPane     = document.getElementById('editor-pane')    as HTMLElement
 const $previewPane    = document.getElementById('preview-pane')   as HTMLElement
 const $previewContent = document.getElementById('preview-content') as HTMLElement
@@ -16,7 +17,8 @@ const $workspace      = document.getElementById('workspace')      as HTMLElement
 const $divider        = document.getElementById('divider')        as HTMLElement
 
 // ── Persistence keys ──────────────────────────────────────────────────
-const LS_COLLAPSED = 'markdown-pro:toolbar-collapsed'
+const LS_COLLAPSED  = 'markdown-pro:toolbar-collapsed'
+const LS_STATUSBAR  = 'markdown-pro:statusbar'
 
 // ── State ─────────────────────────────────────────────────────────────
 let currentNote: SNNote | null = null
@@ -44,58 +46,16 @@ function isMobile(): boolean {
 }
 
 // ── Theme ─────────────────────────────────────────────────────────────
-// Maps SN stylekit variables → our own CSS custom properties.
-// Called on relay ready and whenever SN activates a new theme.
+// CSS vars reference --sn-stylekit-* directly; SN theme stylesheets define
+// those on :root and the cascade handles all colour changes automatically.
+// The only job left for JS is toggling .dark so the hljs overrides apply.
 function updateTheme(): void {
-  const s   = getComputedStyle(document.documentElement)
-  const get = (v: string) => s.getPropertyValue(v).trim()
-
-  // Core surfaces
-  const snBg          = get('--sn-stylekit-background-color')
-  const snFg          = get('--sn-stylekit-foreground-color')
-  const snEdBg        = get('--sn-stylekit-editor-background-color')
-  const snEdFg        = get('--sn-stylekit-editor-foreground-color')
-  // Text hierarchy
-  const snParaFg      = get('--sn-stylekit-paragraph-text-color')
-  const snContrastFg  = get('--sn-stylekit-contrast-foreground-color')
-  const snNeutral     = get('--sn-stylekit-neutral-color')
-  // Chrome
-  const snContrast    = get('--sn-stylekit-contrast-background-color')
-  const snBorder      = get('--sn-stylekit-border-color')
-  const snAccent      = get('--sn-stylekit-info-color')
-
-  const root = document.documentElement
-
-  // Background / foreground
-  if (snBg)         root.style.setProperty('--bg',     snBg)
-  if (snFg)         root.style.setProperty('--fg',     snFg)
-  if (snEdBg)       root.style.setProperty('--ed-bg',  snEdBg)
-  if (snEdFg)       root.style.setProperty('--ed-fg',  snEdFg)
-
-  // Preview uses the note background (same surface as reading a note)
-  // and paragraph text color when available
-  if (snBg)         root.style.setProperty('--pv-bg',  snBg)
-  if (snParaFg)     root.style.setProperty('--pv-fg',  snParaFg)
-  else if (snEdFg)  root.style.setProperty('--pv-fg',  snEdFg)
-
-  // Heading colour tracks the main foreground
-  if (snFg)         root.style.setProperty('--pv-heading', snFg)
-
-  // Secondary text
-  if (snContrastFg) root.style.setProperty('--fg2', snContrastFg)
-  if (snNeutral)    root.style.setProperty('--fg3', snNeutral)
-
-  // Chrome colours
-  if (snContrast)   root.style.setProperty('--bg2',    snContrast)
-  if (snBorder)     root.style.setProperty('--border', snBorder)
-  if (snAccent)     root.style.setProperty('--accent', snAccent)
-
-  // Dark mode: check perceived luminance of the background colour.
-  // Falls back to the OS preference when SN hasn't provided a colour yet.
+  const snBg = getComputedStyle(document.documentElement)
+    .getPropertyValue('--sn-stylekit-background-color').trim()
   const isDark = snBg
     ? perceivedLuminance(snBg) < 128
     : window.matchMedia('(prefers-color-scheme: dark)').matches
-  root.classList.toggle('dark', isDark)
+  document.documentElement.classList.toggle('dark', isDark)
 }
 
 /** Returns 0–255 perceived luminance (ITU-R BT.601). */
@@ -191,6 +151,12 @@ function paintStatusBar(text: string): void {
     </div>`
 }
 
+function setStatusBarVisible(visible: boolean, persist: boolean): void {
+  $app.classList.toggle('statusbar-hidden', !visible)
+  toolbar?.setStatusBarVisible(visible)
+  if (persist) localStorage.setItem(LS_STATUSBAR, String(visible))
+}
+
 // ── Divider drag-to-resize ────────────────────────────────────────────
 function initDivider(): void {
   let dragging = false
@@ -271,6 +237,11 @@ function initEditor(): void {
     ? savedCollapsed === 'true'
     : isMobile()
 
+  // Restore statusbar preference; default to visible
+  const savedStatusBar = localStorage.getItem(LS_STATUSBAR)
+  const startStatusBar = savedStatusBar !== 'false'
+  setStatusBarVisible(startStatusBar, false)
+
   toolbar = new Toolbar($toolbarEl, {
     editor,
     onModeChange(mode: EditorMode) {
@@ -279,8 +250,12 @@ function initEditor(): void {
     onCollapseToggle(collapsed: boolean) {
       localStorage.setItem(LS_COLLAPSED, String(collapsed))
     },
+    onStatusBarToggle(visible: boolean) {
+      setStatusBarVisible(visible, true)
+    },
   })
   toolbar.setCollapsed(startCollapsed)
+  toolbar.setStatusBarVisible(startStatusBar)
 
   initDivider()
   paintStatusBar('')
