@@ -4,14 +4,43 @@
 /* ── CSS variables ─────────────────────────────────────────────────── */
 /*
  * Design split:
- *   --chrome-*   toolbar / statusbar — HARDCODED, never SN-var-derived.
- *                SN themes control the editor/preview but must never
- *                accidentally make toolbar invisible by setting its bg
- *                equal to the editor bg.
+ *   --chrome-*   toolbar / statusbar — follow SN theme vars (secondary/
+ *                contrast layer, falling through to the editor surface). A
+ *                1px border keeps the bar delineated even when its colour
+ *                coincides with the editor, so a theme can never make the
+ *                toolbar invisible.
  *   --ed-* / --pv-*   content areas — follow SN theme vars.
- *   --syn-*      syntax tokens — light palette in :root, Dracula in .dark.
+ *   --syn-*      syntax tokens — Dracula (darkened in :root, full in .dark).
  */
 
+/* ── Standard Notes stylekit defaults ───────────────────────────────────
+ * SN injects a theme stylesheet (<link class="custom-theme">) into this
+ * iframe ONLY for non-default themes. On the default theme — and until a
+ * theme link finishes loading — every --sn-stylekit-* var is undefined, so
+ * without these baked-in defaults the surfaces fall back to arbitrary greys
+ * instead of SN's real colours. These mirror SN's default light theme
+ * (standardnotes/app · packages/styles/src/Styles/_colors.scss); any theme
+ * SN injects is appended after this stylesheet and overrides them, so theme
+ * inheritance keeps working through the cascade. */
+:root {
+  --sn-stylekit-background-color:            #ffffff;
+  --sn-stylekit-foreground-color:            #19191c;
+  --sn-stylekit-border-color:                #dfe1e4;
+  --sn-stylekit-contrast-background-color:   #f4f5f7;
+  --sn-stylekit-contrast-foreground-color:   #2e2e2e;
+  --sn-stylekit-contrast-border-color:       #e3e3e3;
+  --sn-stylekit-secondary-background-color:  #eeeff1;
+  --sn-stylekit-editor-background-color:     #ffffff;
+  --sn-stylekit-editor-foreground-color:     #19191c;
+  --sn-stylekit-paragraph-text-color:        #454545;
+  --sn-stylekit-neutral-color:               #72767e;
+  --sn-stylekit-info-color:                  #086dd6;
+  --sn-stylekit-info-contrast-color:         #ffffff;
+  --sn-stylekit-accessory-tint-color-1:      #086dd6;
+  --sn-stylekit-passive-color-1:             #72767e;
+  --sn-stylekit-passive-color-3:             #dfe1e4;
+  --sn-stylekit-theme-type:                  light;
+}
 :root {
   /* Layout */
   --toolbar-h:           42px;
