@@ -27,6 +27,25 @@ let initialLoad = true
 let currentMode: EditorMode = 'split'
 let editor: Editor | null = null
 let toolbar: Toolbar | null = null
+
+// ── Toolbar (rendered immediately — independent of SN onReady) ────────
+// Buttons are no-ops until setEditor() is called; the toolbar UI is always
+// visible so the user sees the chrome even if the relay handshake is slow.
+{
+  const saved    = localStorage.getItem(LS_COLLAPSED)
+  const collapsed = saved !== null ? saved === 'true' : window.matchMedia('(max-width: 680px)').matches
+  const statusOn  = localStorage.getItem(LS_STATUSBAR) === 'true'
+
+  toolbar = new Toolbar($toolbarEl, {
+    onModeChange(mode: EditorMode)  { setMode(mode, true) },
+    onCollapseToggle(c: boolean)    { localStorage.setItem(LS_COLLAPSED, String(c)) },
+    onStatusBarToggle(v: boolean)   { setStatusBarVisible(v, true) },
+  })
+  toolbar.setCollapsed(collapsed)
+  // Apply initial statusbar CSS without calling setStatusBarVisible (toolbar already synced above)
+  if (!statusOn) $app.classList.add('statusbar-hidden')
+  toolbar.setStatusBarVisible(statusOn)
+}
 /** Latest text inside the save debounce window. */
 let pendingText: string | null = null
 /** Last value that was actually rendered to the preview pane. */
@@ -192,17 +211,12 @@ function initDivider(): void {
   })
 }
 
-// ── Toolbar mode sync (restoring from clientData on note load) ────────
+// ── Toolbar mode sync ─────────────────────────────────────────────────
 function syncToolbarMode(mode: EditorMode): void {
-  $toolbarEl.dataset['mode'] = mode
-  $toolbarEl.querySelectorAll<HTMLButtonElement>('.mode-btn').forEach(btn => {
-    const label = btn.title.replace(' mode', '').toLowerCase() as EditorMode
-    btn.classList.toggle('active', label === mode)
-    btn.setAttribute('aria-pressed', String(label === mode))
-  })
+  toolbar?.setMode(mode)
 }
 
-// ── Editor init ───────────────────────────────────────────────────────
+// ── Editor init (called by onReady once SN establishes communication) ──
 function initEditor(): void {
   editor = new Editor($editorPane, {
     onChange(value: string) {
@@ -225,45 +239,18 @@ function initEditor(): void {
       if (max > 0) $previewPane.scrollTop = pct * max
     },
     onCursor(line: number, col: number) {
-      // Update stored position immediately; batch the DOM write with next status cycle.
       statusLine = line
       statusCol  = col
     },
   })
 
-  // Restore collapsed preference; default to collapsed on mobile
-  const savedCollapsed = localStorage.getItem(LS_COLLAPSED)
-  const startCollapsed = savedCollapsed !== null
-    ? savedCollapsed === 'true'
-    : isMobile()
-
-  // Restore statusbar preference; default to HIDDEN (opt-in via toolbar button)
-  const savedStatusBar = localStorage.getItem(LS_STATUSBAR)
-  const startStatusBar = savedStatusBar === 'true'
-  setStatusBarVisible(startStatusBar, false)
-
-  toolbar = new Toolbar($toolbarEl, {
-    editor,
-    onModeChange(mode: EditorMode) {
-      setMode(mode, true)
-    },
-    onCollapseToggle(collapsed: boolean) {
-      localStorage.setItem(LS_COLLAPSED, String(collapsed))
-    },
-    onStatusBarToggle(visible: boolean) {
-      setStatusBarVisible(visible, true)
-    },
-  })
-  toolbar.setCollapsed(startCollapsed)
-  toolbar.setStatusBarVisible(startStatusBar)
+  // Wire editor into the already-rendered toolbar.
+  toolbar!.setEditor(editor)
 
   initDivider()
   paintStatusBar('')
   setMode(currentMode, false)
-
-  window
-    .matchMedia('(prefers-color-scheme: dark)')
-    .addEventListener('change', updateTheme)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme)
 }
 
 // ── Relay wiring ──────────────────────────────────────────────────────

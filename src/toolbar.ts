@@ -3,7 +3,6 @@ import type { Editor } from './editor'
 export type EditorMode = 'edit' | 'split' | 'preview'
 
 export interface ToolbarOptions {
-  editor: Editor
   onModeChange: (mode: EditorMode) => void
   onCollapseToggle: (collapsed: boolean) => void
   onStatusBarToggle: (visible: boolean) => void
@@ -22,9 +21,7 @@ const ICON_UL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" str
 const ICON_OL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>`
 const ICON_TASK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`
 const ICON_TABLE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`
-// Status bar toggle: a rectangle with a bottom bar highlighted
 const ICON_STATUSBAR = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="17" x2="21" y2="17"/></svg>`
-// Collapse toggle: chevron-up
 const ICON_CHEVRON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`
 
 // ── Format button descriptor ──────────────────────────────────────────
@@ -38,9 +35,10 @@ type FmtItem = FmtButtonDef | 'sep'
 
 // ── Toolbar ───────────────────────────────────────────────────────────
 export class Toolbar {
+  private editor: Editor | null = null
   private currentMode: EditorMode = 'split'
   private collapsed = false
-  private statusBarVisible = true
+  private statusBarVisible = false
   private statusBarBtn: HTMLButtonElement | null = null
   private readonly modeButtons: Partial<Record<EditorMode, HTMLButtonElement>> = {}
 
@@ -49,6 +47,11 @@ export class Toolbar {
     private readonly opts: ToolbarOptions,
   ) {
     this.render()
+  }
+
+  /** Wire the editor instance once it's ready; buttons are no-ops until then. */
+  setEditor(editor: Editor): void {
+    this.editor = editor
   }
 
   private makeSep(): HTMLElement {
@@ -76,7 +79,6 @@ export class Toolbar {
     // ── Segmented mode control ────────────────────────────────────────
     const modeGroup = document.createElement('div')
     modeGroup.className = 'mode-group'
-
     const modes: ReadonlyArray<[EditorMode, string]> = [
       ['edit', 'Edit'],
       ['split', 'Split'],
@@ -95,88 +97,37 @@ export class Toolbar {
     this.container.appendChild(this.makeSep())
 
     // ── Format buttons ────────────────────────────────────────────────
+    // All editor actions guard with this.editor?.  — no-op before wired.
     const items: FmtItem[] = [
-      {
-        icon: ICON_BOLD,
-        title: 'Bold (Ctrl+B)',
-        action: () => { this.opts.editor.wrapSelection('**', '**', 'bold text') },
-      },
-      {
-        icon: ICON_ITALIC,
-        title: 'Italic (Ctrl+I)',
-        action: () => { this.opts.editor.wrapSelection('_', '_', 'italic text') },
-      },
-      {
-        icon: ICON_STRIKE,
-        title: 'Strikethrough (Ctrl+Shift+X)',
-        action: () => { this.opts.editor.wrapSelection('~~', '~~', 'text') },
-      },
-      {
-        icon: ICON_CODE,
-        title: 'Inline code (Ctrl+`)',
-        action: () => { this.opts.editor.wrapSelection('`', '`', 'code') },
-      },
+      { icon: ICON_BOLD,    title: 'Bold (Ctrl+B)',           action: () => { this.editor?.wrapSelection('**', '**', 'bold text') } },
+      { icon: ICON_ITALIC,  title: 'Italic (Ctrl+I)',         action: () => { this.editor?.wrapSelection('_', '_', 'italic text') } },
+      { icon: ICON_STRIKE,  title: 'Strikethrough',           action: () => { this.editor?.wrapSelection('~~', '~~', 'text') } },
+      { icon: ICON_CODE,    title: 'Inline code (Ctrl+`)',    action: () => { this.editor?.wrapSelection('`', '`', 'code') } },
       'sep',
-      {
-        icon: ICON_HEADING,
-        title: 'Heading',
-        action: () => { this.opts.editor.insertAtLineStart('## ') },
-      },
-      {
-        icon: ICON_QUOTE,
-        title: 'Blockquote (Ctrl+Shift+.)',
-        action: () => { this.opts.editor.insertAtLineStart('> ') },
-      },
+      { icon: ICON_HEADING, title: 'Heading',                 action: () => { this.editor?.insertAtLineStart('## ') } },
+      { icon: ICON_QUOTE,   title: 'Blockquote',              action: () => { this.editor?.insertAtLineStart('> ') } },
       'sep',
-      {
-        icon: ICON_UL,
-        title: 'Unordered list (Ctrl+Shift+8)',
-        action: () => { this.opts.editor.insertAtLineStart('- ') },
-      },
-      {
-        icon: ICON_OL,
-        title: 'Ordered list (Ctrl+Shift+7)',
-        action: () => { this.opts.editor.insertAtLineStart('1. ') },
-      },
-      {
-        icon: ICON_TASK,
-        title: 'Task list item',
-        action: () => { this.opts.editor.insertAtLineStart('- [ ] ') },
-      },
+      { icon: ICON_UL,      title: 'Unordered list',         action: () => { this.editor?.insertAtLineStart('- ') } },
+      { icon: ICON_OL,      title: 'Ordered list',           action: () => { this.editor?.insertAtLineStart('1. ') } },
+      { icon: ICON_TASK,    title: 'Task list item',          action: () => { this.editor?.insertAtLineStart('- [ ] ') } },
       'sep',
-      {
-        icon: ICON_LINK,
-        title: 'Link (Ctrl+K)',
-        action: () => { this.opts.editor.wrapSelection('[', '](url)', 'link text') },
-      },
-      {
-        icon: ICON_IMAGE,
-        title: 'Image (Ctrl+Shift+K)',
-        action: () => { this.opts.editor.wrapSelection('![', '](url)', 'alt text') },
-      },
-      {
-        icon: ICON_TABLE,
-        title: 'Insert table',
-        action: () => {
-          this.opts.editor.insertText(
-            '\n| Header 1 | Header 2 | Header 3 |\n| --- | --- | --- |\n| Cell | Cell | Cell |\n',
-          )
-        },
-      },
+      { icon: ICON_LINK,    title: 'Link (Ctrl+K)',           action: () => { this.editor?.wrapSelection('[', '](url)', 'link text') } },
+      { icon: ICON_IMAGE,   title: 'Image',                   action: () => { this.editor?.wrapSelection('![', '](url)', 'alt text') } },
+      { icon: ICON_TABLE,   title: 'Insert table',            action: () => {
+        this.editor?.insertText('\n| Header 1 | Header 2 | Header 3 |\n| --- | --- | --- |\n| Cell | Cell | Cell |\n')
+      }},
     ]
 
     for (const item of items) {
-      this.container.appendChild(
-        item === 'sep' ? this.makeSep() : this.makeFmtButton(item),
-      )
+      this.container.appendChild(item === 'sep' ? this.makeSep() : this.makeFmtButton(item))
     }
 
-    // Spacer + right-side icon buttons ────────────────────────────────
+    // ── Right-side controls ───────────────────────────────────────────
     const spacer = document.createElement('div')
     spacer.className = 'toolbar-spacer'
     this.container.appendChild(spacer)
 
-    // Status bar toggle button
+    // Status bar toggle
     const statusBarBtn = document.createElement('button')
     statusBarBtn.className = 'toolbar-icon-btn'
     statusBarBtn.title = 'Toggle word count'
@@ -193,7 +144,7 @@ export class Toolbar {
     this.statusBarBtn = statusBarBtn
     this.container.appendChild(statusBarBtn)
 
-    // Collapse toggle button
+    // Collapse toggle
     const toggleBtn = document.createElement('button')
     toggleBtn.className = 'toolbar-toggle-btn'
     toggleBtn.title = 'Toggle toolbar'
