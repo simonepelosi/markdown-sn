@@ -24,22 +24,40 @@ export function initRelay(params: {
   onReady: () => void
   onThemesChange: () => void
 }): void {
-  // SN activates themes by appending <link rel="stylesheet"> to <head>.
-  // The ComponentRelay fires onThemesChange BEFORE the network request
-  // completes, so getComputedStyle still returns empty strings for the
-  // SN vars at that point.  Observe the head for new link elements and
-  // re-fire onThemesChange only after each stylesheet has actually loaded.
+  // SN activates themes by injecting CSS into the iframe — usually a
+  // <link rel="stylesheet"> appended to <head>, but depending on platform
+  // it can also arrive as an inline <style> or as a class/style change on
+  // the root element. A <link> fires its callback BEFORE the network
+  // request completes, so getComputedStyle still returns empty SN vars at
+  // that point; we re-fire onThemesChange after the stylesheet has loaded.
+  // <style> and attribute changes apply synchronously, so we re-fire at
+  // once. Watching all three keeps theme inheritance working across web,
+  // desktop and mobile webviews.
   const observer = new MutationObserver(mutations => {
     for (const m of mutations) {
+      if (m.type === 'attributes') {
+        params.onThemesChange()
+        continue
+      }
       for (const node of m.addedNodes) {
         if (node instanceof HTMLLinkElement && node.rel === 'stylesheet') {
           node.addEventListener('load',  params.onThemesChange, { once: true })
           node.addEventListener('error', params.onThemesChange, { once: true })
+        } else if (node instanceof HTMLStyleElement) {
+          params.onThemesChange()
         }
       }
     }
   })
-  observer.observe(document.head, { childList: true })
+  observer.observe(document.head, { childList: true, subtree: true })
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'style'],
+  })
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class', 'style'],
+  })
 
   _relay = new ComponentRelay({
     targetWindow: window,

@@ -26,17 +26,25 @@
   --ed-size: 15px;
 
   /* ── Chrome (toolbar/statusbar) — follows SN theme ────────────────── */
-  /* Uses SN's secondary/contrast background so it reads as a chrome bar
-   * distinct from the editor surface. A guaranteed 1px border on the
-   * toolbar/statusbar keeps them delineated even if a theme makes the
-   * backgrounds match. Fallbacks apply only when running standalone. */
+  /* Prefer SN's secondary/contrast layer so the bar reads as chrome; but
+   * fall through to the editor/main background when a theme (or mobile)
+   * doesn't inject the secondary vars, so the toolbar always matches the
+   * editor surface instead of snapping back to a light hardcode. The 1px
+   * border keeps it delineated even when those colours coincide. The
+   * final hardcodes apply only when running fully standalone. */
   --chrome-bg:     var(--sn-stylekit-secondary-background-color,
-                     var(--sn-stylekit-contrast-background-color, #f0f0f2));
-  --chrome-border: var(--sn-stylekit-border-color,        #d4d4d8);
-  --chrome-fg:     var(--sn-stylekit-passive-color-1,      #52525b);
+                     var(--sn-stylekit-contrast-background-color,
+                       var(--sn-stylekit-editor-background-color,
+                         var(--sn-stylekit-background-color, #f0f0f2))));
+  --chrome-border: var(--sn-stylekit-border-color,
+                     var(--sn-stylekit-contrast-border-color, #d4d4d8));
+  --chrome-fg:     var(--sn-stylekit-passive-color-1,
+                     var(--sn-stylekit-foreground-color, #52525b));
   --chrome-fg-h:   var(--sn-stylekit-foreground-color,     #18181b);
-  --chrome-hover:  var(--sn-stylekit-passive-color-3,      #e4e4e7);
-  --chrome-active: var(--sn-stylekit-info-color,           #2563eb);
+  --chrome-hover:  var(--sn-stylekit-passive-color-3,
+                     var(--sn-stylekit-contrast-background-color, #e4e4e7));
+  --chrome-active: var(--sn-stylekit-info-color,
+                     var(--sn-stylekit-accessory-tint-color-1, #2563eb));
   --chrome-active-fg: var(--sn-stylekit-info-contrast-color, #ffffff);
 
   /* ── Content surface (follow SN theme) ───────────────────────────── */
@@ -102,43 +110,51 @@
  *          provide every variable.
  */
 .dark {
-  /* Chrome — follows SN dark theme; Dracula fallbacks when standalone */
+  /* Chrome — follows SN dark theme; falls through to the editor surface,
+   * then Dracula hardcodes only when fully standalone. */
   --chrome-bg:     var(--sn-stylekit-secondary-background-color,
-                     var(--sn-stylekit-contrast-background-color, #21222c));
-  --chrome-border: var(--sn-stylekit-border-color,        #44475a);
-  --chrome-fg:     var(--sn-stylekit-passive-color-1,      #6272a4);
+                     var(--sn-stylekit-contrast-background-color,
+                       var(--sn-stylekit-editor-background-color,
+                         var(--sn-stylekit-background-color, #21222c))));
+  --chrome-border: var(--sn-stylekit-border-color,
+                     var(--sn-stylekit-contrast-border-color, #44475a));
+  --chrome-fg:     var(--sn-stylekit-passive-color-1,
+                     var(--sn-stylekit-foreground-color, #6272a4));
   --chrome-fg-h:   var(--sn-stylekit-foreground-color,     #f8f8f2);
-  --chrome-hover:  var(--sn-stylekit-passive-color-3,      #343746);
-  --chrome-active: var(--sn-stylekit-info-color,           #bd93f9);
-  --chrome-active-fg: var(--sn-stylekit-info-contrast-color, #282a36);
+  --chrome-hover:  var(--sn-stylekit-passive-color-3,
+                     var(--sn-stylekit-contrast-background-color, #343746));
+  --chrome-active: var(--sn-stylekit-info-color,
+                     var(--sn-stylekit-accessory-tint-color-1, #3b82f6));
+  --chrome-active-fg: var(--sn-stylekit-info-contrast-color, #ffffff);
 
-  /* Content — Dracula fallbacks when SN vars missing */
-  --bg:     var(--sn-stylekit-background-color,           #282a36);
-  --bg2:    var(--sn-stylekit-contrast-background-color,  #44475a);
-  --fg:     var(--sn-stylekit-foreground-color,           #f8f8f2);
-  --fg2:    var(--sn-stylekit-contrast-foreground-color,  #cdd6f4);
-  --fg3:    var(--sn-stylekit-neutral-color,              #6272a4);
-  --border: var(--sn-stylekit-border-color,               #44475a);
-  --accent: var(--sn-stylekit-info-color,                 #bd93f9);
+  /* Content surfaces — follow SN; neutral dark fallbacks only when
+   * standalone. Never Dracula: Dracula is reserved for syntax tokens. */
+  --bg:     var(--sn-stylekit-background-color,           #1e1e1e);
+  --bg2:    var(--sn-stylekit-contrast-background-color,  #2a2a2b);
+  --fg:     var(--sn-stylekit-foreground-color,           #d4d4d4);
+  --fg2:    var(--sn-stylekit-contrast-foreground-color,  #c8c8c8);
+  --fg3:    var(--sn-stylekit-neutral-color,              #808080);
+  --border: var(--sn-stylekit-border-color,               #3a3a3a);
+  --accent: var(--sn-stylekit-info-color,                 #3b82f6);
 
-  --ed-bg:     var(--sn-stylekit-editor-background-color, #282a36);
-  --ed-fg:     var(--sn-stylekit-editor-foreground-color, #f8f8f2);
-  --ed-sel:    rgba(189, 147, 249, .25);
-  --ed-sel-f:  rgba(189, 147, 249, .40);
-  --ed-active: rgba(68, 71, 90, .60);
+  --ed-bg:     var(--sn-stylekit-editor-background-color, #1e1e1e);
+  --ed-fg:     var(--sn-stylekit-editor-foreground-color, #d4d4d4);
+  --ed-sel:    rgba(59, 130, 246, .25);
+  --ed-sel-f:  rgba(59, 130, 246, .40);
+  --ed-active: rgba(255, 255, 255, .05);
 
-  --pv-bg:        var(--sn-stylekit-background-color,     #282a36);
+  --pv-bg:        var(--sn-stylekit-background-color,     #1e1e1e);
   --pv-fg:        var(--sn-stylekit-paragraph-text-color,
-                    var(--sn-stylekit-editor-foreground-color, #f8f8f2));
-  --pv-heading:   var(--sn-stylekit-foreground-color,     #f8f8f2);
-  --pv-link:      var(--sn-stylekit-info-color,           #8be9fd);
-  --pv-code-fg:   #ffb86c;
-  --pv-code-bg:   #44475a;
-  --pv-pre-bg:    #282a36;
-  --pv-bq-border: #6272a4;
-  --pv-bq-text:   #6272a4;
-  --pv-tbl-border: #44475a;
-  --pv-hr:        #44475a;
+                    var(--sn-stylekit-editor-foreground-color, #d4d4d4));
+  --pv-heading:   var(--sn-stylekit-foreground-color,     #ececec);
+  --pv-link:      var(--sn-stylekit-info-color,           #4aa3ff);
+  --pv-code-fg:   var(--sn-stylekit-editor-foreground-color, #d4d4d4);
+  --pv-code-bg:   var(--sn-stylekit-contrast-background-color, #2a2a2b);
+  --pv-pre-bg:    #282a36;            /* Dracula code island (syntax) */
+  --pv-bq-border: var(--sn-stylekit-border-color,         #3a3a3a);
+  --pv-bq-text:   var(--sn-stylekit-neutral-color,        #9a9a9a);
+  --pv-tbl-border: var(--sn-stylekit-border-color,        #3a3a3a);
+  --pv-hr:        var(--sn-stylekit-border-color,         #3a3a3a);
 
   /* Syntax tokens — full Dracula */
   --syn-h1:     #ff79c6;

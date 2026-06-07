@@ -273,13 +273,18 @@ initRelay({
     document.body.setAttribute('data-ready', 'true')
     initEditor()
     updateTheme()
-    // Poll for SN theme vars for 1.5 s — covers themes applied via <style>
-    // elements or postMessage rather than <link> stylesheets.
+    // SN may inject the theme slightly after ready (especially in mobile
+    // webviews). Poll for ~3 s, and re-check whenever the iframe regains
+    // visibility or focus, so the surfaces catch up to the active theme.
     let polls = 0
     const tid = setInterval(() => {
       updateTheme()
-      if (++polls >= 15) clearInterval(tid)
+      if (++polls >= 30) clearInterval(tid)
     }, 100)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateTheme()
+    })
+    window.addEventListener('focus', updateTheme)
   },
   onThemesChange() {
     updateTheme()
