@@ -237,9 +237,9 @@ function initEditor(): void {
     ? savedCollapsed === 'true'
     : isMobile()
 
-  // Restore statusbar preference; default to visible
+  // Restore statusbar preference; default to HIDDEN (opt-in via toolbar button)
   const savedStatusBar = localStorage.getItem(LS_STATUSBAR)
-  const startStatusBar = savedStatusBar !== 'false'
+  const startStatusBar = savedStatusBar === 'true'
   setStatusBarVisible(startStatusBar, false)
 
   toolbar = new Toolbar($toolbarEl, {
@@ -272,6 +272,13 @@ initRelay({
     document.body.setAttribute('data-ready', 'true')
     initEditor()
     updateTheme()
+    // Poll for SN theme vars for 1.5 s — covers themes applied via <style>
+    // elements or postMessage rather than <link> stylesheets.
+    let polls = 0
+    const tid = setInterval(() => {
+      updateTheme()
+      if (++polls >= 15) clearInterval(tid)
+    }, 100)
   },
   onThemesChange() {
     updateTheme()

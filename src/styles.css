@@ -4,12 +4,15 @@
 
 /* ── CSS variables ─────────────────────────────────────────────────── */
 /*
- * All surface vars reference SN stylekit vars directly so that SN themes
- * cascade automatically.  The fallback literals are LIGHT-MODE values.
- * The .dark block re-declares the same vars with DARK fallbacks; if SN
- * provides the stylekit var the value is identical — the fallback only
- * activates when a partial or missing theme leaves a gap.
+ * Design split:
+ *   --chrome-*   toolbar / statusbar — HARDCODED, never SN-var-derived.
+ *                SN themes control the editor/preview but must never
+ *                accidentally make toolbar invisible by setting its bg
+ *                equal to the editor bg.
+ *   --ed-* / --pv-*   content areas — follow SN theme vars.
+ *   --syn-*      syntax tokens — light palette in :root, Dracula in .dark.
  */
+
 :root {
   /* Layout */
   --toolbar-h:           42px;
@@ -23,21 +26,27 @@
   --ed-mono: var(--sn-stylekit-monospace-font,   ui-monospace, 'Cascadia Code', monospace);
   --ed-size: 15px;
 
-  /* === Surface (SN var + light fallback) ============================= */
+  /* ── Chrome (toolbar/statusbar) — hardcoded, never SN-overrideable ── */
+  --chrome-bg:     #f0f0f2;
+  --chrome-border: #d4d4d8;
+  --chrome-fg:     #52525b;
+  --chrome-fg-h:   #18181b;
+  --chrome-hover:  #e4e4e7;
+  --chrome-active: #2563eb;
+  --chrome-active-fg: #ffffff;
+
+  /* ── Content surface (follow SN theme) ───────────────────────────── */
   --bg:     var(--sn-stylekit-background-color,           #ffffff);
   --bg2:    var(--sn-stylekit-contrast-background-color,  #f7f7f8);
-  --bg3:    var(--sn-stylekit-secondary-background-color, #ececed);
   --fg:     var(--sn-stylekit-foreground-color,           #1a1a2e);
   --fg2:    var(--sn-stylekit-contrast-foreground-color,  #52525b);
   --fg3:    var(--sn-stylekit-neutral-color,              #9ca3af);
   --border: var(--sn-stylekit-border-color,               #e4e4e7);
   --accent: var(--sn-stylekit-info-color,                 #2563eb);
-  --accent-hover: #1d4ed8;
-  --accent-fg:    #ffffff;
 
   /* Editor surface */
-  --ed-bg:     var(--sn-stylekit-editor-background-color, var(--bg));
-  --ed-fg:     var(--sn-stylekit-editor-foreground-color, var(--fg));
+  --ed-bg:     var(--sn-stylekit-editor-background-color, #ffffff);
+  --ed-fg:     var(--sn-stylekit-editor-foreground-color, #1a1a2e);
   --ed-cursor: var(--ed-fg);
   --ed-sel:    rgba(37, 99, 235, .18);
   --ed-sel-f:  rgba(37, 99, 235, .28);
@@ -57,71 +66,81 @@
   --pv-tbl-border: var(--sn-stylekit-border-color,        #e5e7eb);
   --pv-hr:        var(--sn-stylekit-border-color,         #e5e7eb);
 
-  /* === Editor syntax tokens — vivid, per-level ====================== */
-  --syn-h1:     #7c3aed;   /* violet  – H1 */
-  --syn-h2:     #2563eb;   /* blue    – H2 */
-  --syn-h3:     #0891b2;   /* cyan    – H3 */
-  --syn-h:      #374151;   /* H4-H6 and generic heading */
-  --syn-strong: var(--sn-stylekit-foreground-color, #111827);
-  --syn-em:     var(--sn-stylekit-contrast-foreground-color, #374151);
-  --syn-link:   var(--sn-stylekit-info-color,        #2563eb);
+  /* ── Syntax tokens — vivid light palette ──────────────────────────── */
+  --syn-h1:     #7c3aed;
+  --syn-h2:     #2563eb;
+  --syn-h3:     #0891b2;
+  --syn-h:      #374151;
+  --syn-strong: #111827;
+  --syn-em:     #374151;
+  --syn-link:   #2563eb;
   --syn-code:   #dc2626;
   --syn-quote:  #6b7280;
-  --syn-list:   var(--sn-stylekit-contrast-foreground-color, #374151);
+  --syn-list:   #374151;
   --syn-meta:   #9ca3af;
-  --syn-hr:     var(--sn-stylekit-border-color,      #d1d5db);
-  --syn-fmt:    #9ca3af;   /* formatting markers: **, __, #, ``` */
+  --syn-hr:     #d1d5db;
+  --syn-fmt:    #9ca3af;
 }
 
+/* ── Dark mode ─────────────────────────────────────────────────────── */
 /*
- * .dark: same vars, DARK fallbacks.
- * Covers the case where the active SN theme doesn't define every var.
+ * Chrome: Dracula Current Line (#44475a) as toolbar bg — always
+ *         visually distinct from Dracula editor bg (#282a36).
+ * Content: SN vars first, Dracula fallbacks if the theme doesn't
+ *          provide every variable.
  */
 .dark {
-  --bg:     var(--sn-stylekit-background-color,           #18181b);
-  --bg2:    var(--sn-stylekit-contrast-background-color,  #27272a);
-  --bg3:    var(--sn-stylekit-secondary-background-color, #3f3f46);
-  --fg:     var(--sn-stylekit-foreground-color,           #e4e4e7);
-  --fg2:    var(--sn-stylekit-contrast-foreground-color,  #a1a1aa);
-  --fg3:    var(--sn-stylekit-neutral-color,              #71717a);
-  --border: var(--sn-stylekit-border-color,               #3f3f46);
-  --accent: var(--sn-stylekit-info-color,                 #60a5fa);
-  --accent-hover: #93c5fd;
-  --accent-fg:    #0f172a;
+  /* Chrome — hardcoded Dracula, SN cannot interfere */
+  --chrome-bg:     #44475a;
+  --chrome-border: #6272a4;
+  --chrome-fg:     #6272a4;
+  --chrome-fg-h:   #f8f8f2;
+  --chrome-hover:  #44475a;
+  --chrome-active: #bd93f9;
+  --chrome-active-fg: #282a36;
 
-  --ed-bg:     var(--sn-stylekit-editor-background-color, #18181b);
-  --ed-fg:     var(--sn-stylekit-editor-foreground-color, #e4e4e7);
-  --ed-sel:    rgba(96, 165, 250, .20);
-  --ed-sel-f:  rgba(96, 165, 250, .30);
-  --ed-active: rgba(255, 255, 255, .03);
+  /* Content — Dracula fallbacks when SN vars missing */
+  --bg:     var(--sn-stylekit-background-color,           #282a36);
+  --bg2:    var(--sn-stylekit-contrast-background-color,  #44475a);
+  --fg:     var(--sn-stylekit-foreground-color,           #f8f8f2);
+  --fg2:    var(--sn-stylekit-contrast-foreground-color,  #cdd6f4);
+  --fg3:    var(--sn-stylekit-neutral-color,              #6272a4);
+  --border: var(--sn-stylekit-border-color,               #44475a);
+  --accent: var(--sn-stylekit-info-color,                 #bd93f9);
 
-  --pv-bg:        var(--sn-stylekit-background-color,     #1c1c1f);
+  --ed-bg:     var(--sn-stylekit-editor-background-color, #282a36);
+  --ed-fg:     var(--sn-stylekit-editor-foreground-color, #f8f8f2);
+  --ed-sel:    rgba(189, 147, 249, .25);
+  --ed-sel-f:  rgba(189, 147, 249, .40);
+  --ed-active: rgba(68, 71, 90, .60);
+
+  --pv-bg:        var(--sn-stylekit-background-color,     #282a36);
   --pv-fg:        var(--sn-stylekit-paragraph-text-color,
-                    var(--sn-stylekit-editor-foreground-color, #e4e4e7));
-  --pv-heading:   var(--sn-stylekit-foreground-color,     #f4f4f5);
-  --pv-link:      var(--sn-stylekit-info-color,           #60a5fa);
-  --pv-code-fg:   #f87171;
-  --pv-code-bg:   var(--sn-stylekit-contrast-background-color, #27272a);
-  --pv-pre-bg:    var(--sn-stylekit-contrast-background-color, #27272a);
-  --pv-bq-border: var(--sn-stylekit-border-color,         #3f3f46);
-  --pv-bq-text:   var(--sn-stylekit-neutral-color,        #a1a1aa);
-  --pv-tbl-border: var(--sn-stylekit-border-color,        #3f3f46);
-  --pv-hr:        var(--sn-stylekit-border-color,         #3f3f46);
+                    var(--sn-stylekit-editor-foreground-color, #f8f8f2));
+  --pv-heading:   var(--sn-stylekit-foreground-color,     #f8f8f2);
+  --pv-link:      var(--sn-stylekit-info-color,           #8be9fd);
+  --pv-code-fg:   #ffb86c;
+  --pv-code-bg:   #44475a;
+  --pv-pre-bg:    #1e1f29;
+  --pv-bq-border: #6272a4;
+  --pv-bq-text:   #6272a4;
+  --pv-tbl-border: #44475a;
+  --pv-hr:        #44475a;
 
-  /* Vivid dark-mode syntax tokens */
-  --syn-h1:    #a78bfa;   /* violet-400 */
-  --syn-h2:    #60a5fa;   /* blue-400   */
-  --syn-h3:    #22d3ee;   /* cyan-400   */
-  --syn-h:     #e4e4e7;
-  --syn-strong: var(--sn-stylekit-foreground-color, #f4f4f5);
-  --syn-em:    var(--sn-stylekit-contrast-foreground-color, #e4e4e7);
-  --syn-link:  var(--sn-stylekit-info-color,         #60a5fa);
-  --syn-code:  #f87171;
-  --syn-quote: #a1a1aa;
-  --syn-list:  var(--sn-stylekit-contrast-foreground-color, #e4e4e7);
-  --syn-meta:  #71717a;
-  --syn-hr:    var(--sn-stylekit-border-color,        #3f3f46);
-  --syn-fmt:   #52525b;
+  /* Dracula syntax tokens */
+  --syn-h1:     #ff79c6;
+  --syn-h2:     #bd93f9;
+  --syn-h3:     #8be9fd;
+  --syn-h:      #cdd6f4;
+  --syn-strong: #f8f8f2;
+  --syn-em:     #f1fa8c;
+  --syn-link:   #8be9fd;
+  --syn-code:   #ffb86c;
+  --syn-quote:  #6272a4;
+  --syn-list:   #f8f8f2;
+  --syn-meta:   #6272a4;
+  --syn-hr:     #44475a;
+  --syn-fmt:    #6272a4;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
@@ -130,8 +149,8 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--ed-bg);
+  color: var(--ed-fg);
   font-family: var(--ed-font);
   font-size: var(--ed-size);
   line-height: 1.6;
@@ -144,67 +163,64 @@ html, body {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
 }
 
 /* ── Toolbar ───────────────────────────────────────────────────────── */
 #toolbar {
   flex: 0 0 var(--toolbar-h);
-  height: var(--toolbar-h);
+  min-height: var(--toolbar-h);
   display: flex;
   align-items: center;
   gap: 2px;
   padding: 0 8px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  overflow: hidden;
+  background: var(--chrome-bg);
+  border-bottom: 1px solid var(--chrome-border);
 }
 
 /* Collapsed: shrink to toggle-button height, hide everything else */
-#toolbar.collapsed { flex-basis: var(--toolbar-collapsed-h); height: var(--toolbar-collapsed-h); }
+#toolbar.collapsed {
+  flex: 0 0 var(--toolbar-collapsed-h);
+  min-height: var(--toolbar-collapsed-h);
+}
 #toolbar.collapsed > :not(.toolbar-toggle-btn) { display: none; }
 
-/* Chevron rotates to point down (= "expand") when collapsed */
+/* Chevron rotates down when collapsed */
 .toolbar-toggle-btn svg { transition: transform 0.2s ease; }
 #toolbar.collapsed .toolbar-toggle-btn svg { transform: rotate(180deg); }
-
-.toolbar-group  { display: flex; align-items: center; gap: 1px; }
 
 .toolbar-sep {
   width: 1px;
   height: 18px;
-  background: var(--border);
+  background: var(--chrome-border);
   margin: 0 4px;
   flex-shrink: 0;
 }
-
 .toolbar-spacer { flex: 1; }
 
 /* Segmented mode control */
 .mode-group {
   display: flex;
   align-items: center;
-  border: 1px solid var(--border);
+  border: 1px solid var(--chrome-border);
   border-radius: var(--radius);
   overflow: hidden;
 }
-
 .mode-btn {
   padding: 4px 10px;
   font-size: 12px;
   font-family: var(--ed-font);
   font-weight: 500;
-  color: var(--fg2);
+  color: var(--chrome-fg);
   background: transparent;
   border: none;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--chrome-border);
   cursor: pointer;
   transition: background .12s, color .12s;
   white-space: nowrap;
 }
 .mode-btn:last-child { border-right: none; }
-.mode-btn:hover      { background: var(--bg3); color: var(--fg); }
-.mode-btn.active     { background: var(--accent); color: var(--accent-fg); }
+.mode-btn:hover      { background: var(--chrome-hover); color: var(--chrome-fg-h); }
+.mode-btn.active     { background: var(--chrome-active); color: var(--chrome-active-fg); }
 
 /* Format buttons */
 .fmt-btn {
@@ -214,37 +230,18 @@ html, body {
   width: 28px;
   height: 28px;
   padding: 0;
-  color: var(--fg2);
+  color: var(--chrome-fg);
   background: transparent;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   transition: background .12s, color .12s;
 }
-.fmt-btn:hover  { background: var(--bg3); color: var(--fg); }
-.fmt-btn svg    { pointer-events: none; }
+.fmt-btn:hover { background: var(--chrome-hover); color: var(--chrome-fg-h); }
+.fmt-btn svg   { pointer-events: none; }
 
-/* Toolbar icon buttons (statusbar toggle) */
-.toolbar-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  color: var(--fg3);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: color .12s;
-  flex-shrink: 0;
-  position: relative;
-}
-.toolbar-icon-btn:hover  { color: var(--fg); }
-.toolbar-icon-btn.active { color: var(--accent); }
-
-/* Toolbar collapse toggle */
+/* Icon-only toolbar buttons (statusbar toggle, collapse) */
+.toolbar-icon-btn,
 .toolbar-toggle-btn {
   display: flex;
   align-items: center;
@@ -252,7 +249,7 @@ html, body {
   width: 26px;
   height: 26px;
   padding: 0;
-  color: var(--fg3);
+  color: var(--chrome-fg);
   background: transparent;
   border: none;
   border-radius: var(--radius);
@@ -261,7 +258,9 @@ html, body {
   flex-shrink: 0;
   position: relative;
 }
-.toolbar-toggle-btn:hover { color: var(--fg); }
+.toolbar-icon-btn:hover,
+.toolbar-toggle-btn:hover { color: var(--chrome-fg-h); }
+.toolbar-icon-btn.active  { color: var(--chrome-active); }
 
 /* ── Workspace ─────────────────────────────────────────────────────── */
 #workspace {
@@ -279,8 +278,6 @@ html, body {
   display: flex;
   flex-direction: column;
 }
-
-/* CodeMirror overrides */
 #editor-pane .cm-editor {
   height: 100%;
   background: var(--ed-bg);
@@ -301,14 +298,14 @@ html, body {
 }
 #editor-pane .cm-line { padding: 0; }
 #editor-pane .cm-cursor,
-#editor-pane .cm-dropCursor        { border-left-color: var(--ed-cursor); }
-#editor-pane .cm-selectionBackground        { background: var(--ed-sel) !important; }
+#editor-pane .cm-dropCursor { border-left-color: var(--ed-cursor); }
+#editor-pane .cm-selectionBackground { background: var(--ed-sel) !important; }
 #editor-pane .cm-focused .cm-selectionBackground { background: var(--ed-sel-f) !important; }
-#editor-pane .cm-activeLine        { background: var(--ed-active); }
-#editor-pane .cm-gutters           { display: none; }
-#editor-pane .cm-activeLineGutter  { display: none; }
+#editor-pane .cm-activeLine  { background: var(--ed-active); }
+#editor-pane .cm-gutters     { display: none; }
+#editor-pane .cm-activeLineGutter { display: none; }
 
-/* ── Divider / resize handle ───────────────────────────────────────── */
+/* ── Divider ───────────────────────────────────────────────────────── */
 #divider {
   flex: 0 0 var(--divider-w);
   width: var(--divider-w);
@@ -317,8 +314,7 @@ html, body {
   transition: background .15s;
   z-index: 1;
 }
-#divider:hover,
-#divider.dragging { background: var(--accent); }
+#divider:hover, #divider.dragging { background: var(--accent); }
 
 /* ── Preview pane ──────────────────────────────────────────────────── */
 #preview-pane {
@@ -328,7 +324,6 @@ html, body {
   background: var(--pv-bg);
   border-left: 1px solid var(--border);
 }
-
 .preview-content {
   padding: 20px 24px;
   color: var(--pv-fg);
@@ -337,43 +332,29 @@ html, body {
   line-height: 1.7;
 }
 
-/* Preview typography */
+/* Typography */
 .preview-content h1,
 .preview-content h2,
 .preview-content h3,
 .preview-content h4,
 .preview-content h5,
-.preview-content h6 {
-  color: var(--pv-heading);
-  font-weight: 600;
-  line-height: 1.3;
-  margin: 1.25em 0 .5em;
-}
+.preview-content h6 { color: var(--pv-heading); font-weight: 600; line-height: 1.3; margin: 1.25em 0 .5em; }
 .preview-content h1 { font-size: 1.875em; margin-top: 0; border-bottom: 2px solid var(--pv-hr); padding-bottom: .3em; }
-.preview-content h2 { font-size: 1.5em;   border-bottom: 1px solid var(--pv-hr); padding-bottom: .2em; }
+.preview-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--pv-hr); padding-bottom: .2em; }
 .preview-content h3 { font-size: 1.25em; }
 .preview-content h4 { font-size: 1.1em; }
 .preview-content h5 { font-size: 1em; }
 .preview-content h6 { font-size: .95em; color: var(--fg2); }
-
-.preview-content p { margin: .75em 0; }
+.preview-content p  { margin: .75em 0; }
 .preview-content p:first-child { margin-top: 0; }
 .preview-content p:last-child  { margin-bottom: 0; }
-
-.preview-content a {
-  color: var(--pv-link);
-  text-decoration: none;
-}
+.preview-content a  { color: var(--pv-link); text-decoration: none; }
 .preview-content a:hover { opacity: .8; }
-
 .preview-content ul, .preview-content ol { padding-left: 1.5em; margin: .75em 0; }
 .preview-content li       { margin: .25em 0; }
 .preview-content li > p   { margin: 0; }
-
-/* Task lists */
 .preview-content .task-list-item { list-style: none; margin-left: -1.5em; padding-left: 1.5em; }
 .preview-content .task-list-item input[type='checkbox'] { margin-right: .4em; accent-color: var(--accent); }
-
 .preview-content blockquote {
   border-left: 3px solid var(--pv-bq-border);
   margin: 1em 0;
@@ -383,7 +364,6 @@ html, body {
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 .preview-content blockquote p { margin: 0; }
-
 .preview-content code {
   font-family: var(--ed-mono);
   font-size: .875em;
@@ -392,7 +372,6 @@ html, body {
   padding: .15em .35em;
   border-radius: 3px;
 }
-
 .preview-content pre {
   background: var(--pv-pre-bg);
   border-radius: var(--radius);
@@ -409,56 +388,69 @@ html, body {
   line-height: 1.6;
   border-radius: 0;
 }
-
-/* Tables */
 .preview-content table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9375em; }
 .preview-content th, .preview-content td { border: 1px solid var(--pv-tbl-border); padding: .5em .8em; text-align: left; }
 .preview-content th { background: var(--bg2); font-weight: 600; color: var(--pv-heading); }
 .preview-content tr:nth-child(even) td { background: var(--bg2); }
-
-.preview-content hr { border: none; border-top: 2px solid var(--pv-hr); margin: 1.5em 0; }
+.preview-content hr  { border: none; border-top: 2px solid var(--pv-hr); margin: 1.5em 0; }
 .preview-content img { max-width: 100%; border-radius: var(--radius); }
 
 /* Math */
-.math-block   { overflow-x: auto; padding: .75em 0; text-align: center; }
-.math-inline  { display: inline; }
-.math-error   { color: var(--pv-code-fg); font-family: var(--ed-mono); font-size: .875em; opacity: .7; }
+.math-block  { overflow-x: auto; padding: .75em 0; text-align: center; }
+.math-inline { display: inline; }
+.math-error  { color: var(--pv-code-fg); font-family: var(--ed-mono); font-size: .875em; opacity: .7; }
 
-/* HLjs dark mode — scoped under .dark on <html> */
-.dark .hljs            { background: var(--pv-pre-bg); color: #abb2bf; }
+/* ── HLjs: Dracula dark theme ──────────────────────────────────────── */
+.dark .hljs                       { background: var(--pv-pre-bg); color: #f8f8f2; }
 .dark .hljs-comment,
-.dark .hljs-meta       { color: #7c8db8; }
+.dark .hljs-quote                 { color: #6272a4; }
 .dark .hljs-keyword,
-.dark .hljs-selector-tag { color: #c678dd; }
+.dark .hljs-selector-tag,
+.dark .hljs-meta .hljs-keyword    { color: #ff79c6; }
 .dark .hljs-string,
-.dark .hljs-attr       { color: #98c379; }
-.dark .hljs-number     { color: #d19a66; }
-.dark .hljs-built_in   { color: #61afef; }
-.dark .hljs-title,
-.dark .hljs-class\.name { color: #61afef; }
-.dark .hljs-type       { color: #e5c07b; }
+.dark .hljs-attr,
+.dark .hljs-addition,
+.dark .hljs-meta .hljs-string     { color: #f1fa8c; }
+.dark .hljs-number,
+.dark .hljs-selector-attr,
+.dark .hljs-selector-pseudo,
 .dark .hljs-literal,
-.dark .hljs-symbol     { color: #56b6c2; }
-.dark .hljs-deletion   { color: #e06c75; }
-.dark .hljs-addition   { color: #98c379; }
-.dark .hljs-variable   { color: #e06c75; }
-.dark .hljs-tag        { color: #e06c75; }
-.dark .hljs-name       { color: #e06c75; }
-.dark .hljs-punctuation { color: #abb2bf; }
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-type                  { color: #bd93f9; }
+.dark .hljs-built_in,
+.dark .hljs-title.class_,
+.dark .hljs-class .hljs-title     { color: #8be9fd; }
+.dark .hljs-symbol,
+.dark .hljs-bullet,
+.dark .hljs-link,
+.dark .hljs-meta,
+.dark .hljs-selector-id,
+.dark .hljs-title                 { color: #50fa7b; }
+.dark .hljs-name,
+.dark .hljs-tag,
+.dark .hljs-deletion,
+.dark .hljs-subst                 { color: #ff5555; }
+.dark .hljs-section               { color: #ff79c6; font-weight: bold; }
+.dark .hljs-regexp,
+.dark .hljs-attribute             { color: #ffb86c; }
+.dark .hljs-strong                { font-weight: bold; }
+.dark .hljs-emphasis              { font-style: italic; }
+.dark .hljs-link                  { text-decoration: underline; }
 
 /* ── Status bar ────────────────────────────────────────────────────── */
 #statusbar {
   flex: 0 0 var(--statusbar-h);
-  height: var(--statusbar-h);
+  min-height: var(--statusbar-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
+  background: var(--chrome-bg);
+  border-top: 1px solid var(--chrome-border);
   font-size: 11.5px;
   font-family: var(--ed-font);
-  color: var(--fg3);
+  color: var(--chrome-fg);
   user-select: none;
   gap: 12px;
 }
@@ -467,18 +459,17 @@ html, body {
 .statusbar-item { white-space: nowrap; }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────── */
-::-webkit-scrollbar          { width: 6px; height: 6px; }
-::-webkit-scrollbar-track    { background: transparent; }
-::-webkit-scrollbar-thumb    { background: var(--bg3); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--fg3); }
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fg3); border-radius: 3px; opacity: .4; }
+::-webkit-scrollbar-thumb:hover { opacity: .8; }
 
 /* ── Mode-based visibility ─────────────────────────────────────────── */
-#workspace[data-mode='edit'] #divider,
-#workspace[data-mode='edit'] #preview-pane,
+#workspace[data-mode='edit']    #divider,
+#workspace[data-mode='edit']    #preview-pane,
 #workspace[data-mode='preview'] #editor-pane,
 #workspace[data-mode='preview'] #divider { display: none; }
-
-#workspace[data-mode='edit'] #editor-pane,
+#workspace[data-mode='edit']    #editor-pane,
 #workspace[data-mode='preview'] #preview-pane { flex: 1 1 100%; }
 
 /* ── Loading fade-in ───────────────────────────────────────────────── */
@@ -487,9 +478,9 @@ body[data-ready] #workspace       { opacity: 1; transition: opacity .15s; }
 
 /* ── Mobile ────────────────────────────────────────────────────────── */
 @media (max-width: 680px) {
-  .fmt-btn   { width: 34px; height: 34px; }
-  .mode-btn  { padding: 5px 9px; font-size: 12px; }
-  .toolbar-sep  { display: none; }
+  .fmt-btn  { width: 34px; height: 34px; }
+  .mode-btn { padding: 5px 9px; font-size: 12px; }
+  .toolbar-sep { display: none; }
   #toolbar {
     gap: 0;
     padding: 0 8px;
@@ -501,16 +492,12 @@ body[data-ready] #workspace       { opacity: 1; transition: opacity .15s; }
   .toolbar-toggle-btn {
     position: sticky;
     right: 0;
-    background: var(--bg2);
-    box-shadow: -6px 0 8px var(--bg2);
+    background: var(--chrome-bg);
+    box-shadow: -6px 0 8px var(--chrome-bg);
     width: 34px;
     height: 34px;
   }
-  .toolbar-toggle-btn::before {
-    content: '';
-    position: absolute;
-    inset: -6px;
-  }
+  .toolbar-toggle-btn::before { content: ''; position: absolute; inset: -6px; }
   .preview-content { padding: 16px; font-size: 15px; }
   #editor-pane .cm-content { padding: 16px; }
   #workspace[data-mode='split'] #divider,
