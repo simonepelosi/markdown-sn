@@ -108,27 +108,27 @@
   --pv-hr:        var(--sn-stylekit-border-color,         #e5e7eb);
 
   /* ── Syntax tokens — Dracula-derived, darkened for light surfaces ─── */
-  --syn-h1:     #d6336c;   /* pink   */
-  --syn-h2:     #7048e8;   /* purple */
-  --syn-h3:     #0c8599;   /* cyan   */
-  --syn-h:      #343a40;
-  --syn-strong: #1a1a2e;
-  --syn-em:     #9c36b5;   /* magenta */
-  --syn-link:   #1971c2;
-  --syn-code:   #e8590c;   /* orange */
-  --syn-quote:  #868e96;
-  --syn-list:   #364fc7;
-  --syn-meta:   #adb5bd;
-  --syn-hr:     #ced4da;
-  --syn-fmt:    #adb5bd;
+  --syn-h1:     #c2185b;   /* pink   */
+  --syn-h2:     #7c3aed;   /* purple */
+  --syn-h3:     #0e7490;   /* cyan   */
+  --syn-h:      #1f2933;
+  --syn-strong: #0b1020;
+  --syn-em:     #ae3ec9;   /* magenta — yellow is illegible on white */
+  --syn-link:   #0e7490;   /* cyan   */
+  --syn-code:   #d9480f;   /* orange */
+  --syn-quote:  #6b7687;   /* slate  */
+  --syn-list:   #7c3aed;   /* purple */
+  --syn-meta:   #9aa5b1;
+  --syn-hr:     #cbd2d9;
+  --syn-fmt:    #9aa5b1;
   /* Embedded fenced-code tokens (editor) */
-  --syn-kw:     #c2255c;   /* keyword  — pink   */
-  --syn-str:    #2b8a3e;   /* string   — green  */
-  --syn-num:    #6741d9;   /* number   — purple */
-  --syn-cmt:    #868e96;   /* comment  — grey   */
+  --syn-kw:     #c2185b;   /* keyword  — pink   */
+  --syn-str:    #1a7f37;   /* string   — green  */
+  --syn-num:    #7c3aed;   /* number   — purple */
+  --syn-cmt:    #6b7687;   /* comment  — slate  */
   --syn-fn:     #1971c2;   /* function — blue   */
-  --syn-cls:    #0c8599;   /* type     — cyan   */
-  --syn-op:     #c2255c;   /* operator — pink   */
+  --syn-cls:    #0e7490;   /* type     — cyan   */
+  --syn-op:     #c2185b;   /* operator — pink   */
 }
 
 /* ── Dark mode ─────────────────────────────────────────────────────── */
@@ -186,27 +186,27 @@
   --pv-hr:        var(--sn-stylekit-border-color,         #3a3a3a);
 
   /* Syntax tokens — full Dracula */
-  --syn-h1:     #ff79c6;
-  --syn-h2:     #bd93f9;
-  --syn-h3:     #8be9fd;
+  --syn-h1:     #ff79c6;   /* pink   */
+  --syn-h2:     #bd93f9;   /* purple */
+  --syn-h3:     #8be9fd;   /* cyan   */
   --syn-h:      #f8f8f2;
   --syn-strong: #ffffff;
-  --syn-em:     #f1fa8c;
-  --syn-link:   #8be9fd;
-  --syn-code:   #ffb86c;
+  --syn-em:     #f1fa8c;   /* yellow */
+  --syn-link:   #8be9fd;   /* cyan   */
+  --syn-code:   #ffb86c;   /* orange */
   --syn-quote:  #6272a4;
-  --syn-list:   #bd93f9;
+  --syn-list:   #ffb86c;   /* orange — distinct from purple headings */
   --syn-meta:   #6272a4;
   --syn-hr:     #44475a;
   --syn-fmt:    #6272a4;
   /* Embedded fenced-code tokens */
-  --syn-kw:     #ff79c6;
-  --syn-str:    #f1fa8c;
-  --syn-num:    #bd93f9;
-  --syn-cmt:    #6272a4;
-  --syn-fn:     #50fa7b;
-  --syn-cls:    #8be9fd;
-  --syn-op:     #ff79c6;
+  --syn-kw:     #ff79c6;   /* keyword  — pink   */
+  --syn-str:    #f1fa8c;   /* string   — yellow */
+  --syn-num:    #bd93f9;   /* number   — purple */
+  --syn-cmt:    #6272a4;   /* comment  — slate  */
+  --syn-fn:     #50fa7b;   /* function — green  */
+  --syn-cls:    #8be9fd;   /* type     — cyan   */
+  --syn-op:     #ff79c6;   /* operator — pink   */
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
