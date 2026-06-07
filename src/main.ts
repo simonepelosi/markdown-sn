@@ -32,13 +32,16 @@ let toolbar: Toolbar | null = null
 // Buttons are no-ops until setEditor() is called; the toolbar UI is always
 // visible so the user sees the chrome even if the relay handshake is slow.
 {
-  const saved    = localStorage.getItem(LS_COLLAPSED)
+  let saved: string | null = null
+  try { saved = localStorage.getItem(LS_COLLAPSED) } catch { /* Safari ITP / sandboxed iframe */ }
   const collapsed = saved !== null ? saved === 'true' : window.matchMedia('(max-width: 680px)').matches
-  const statusOn  = localStorage.getItem(LS_STATUSBAR) === 'true'
+  let savedStatus: string | null = null
+  try { savedStatus = localStorage.getItem(LS_STATUSBAR) } catch { /* ITP */ }
+  const statusOn  = savedStatus === 'true'
 
   toolbar = new Toolbar($toolbarEl, {
     onModeChange(mode: EditorMode)  { setMode(mode, true) },
-    onCollapseToggle(c: boolean)    { localStorage.setItem(LS_COLLAPSED, String(c)) },
+    onCollapseToggle(c: boolean)    { try { localStorage.setItem(LS_COLLAPSED, String(c)) } catch { /* ITP */ } },
     onStatusBarToggle(v: boolean)   { setStatusBarVisible(v, true) },
   })
   toolbar.setCollapsed(collapsed)
@@ -173,7 +176,7 @@ function paintStatusBar(text: string): void {
 function setStatusBarVisible(visible: boolean, persist: boolean): void {
   $app.classList.toggle('statusbar-hidden', !visible)
   toolbar?.setStatusBarVisible(visible)
-  if (persist) localStorage.setItem(LS_STATUSBAR, String(visible))
+  if (persist) { try { localStorage.setItem(LS_STATUSBAR, String(visible)) } catch { /* ITP */ } }
 }
 
 // ── Divider drag-to-resize ────────────────────────────────────────────
