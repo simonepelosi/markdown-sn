@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.yarn/
+*.local
+
+# Editor
+.vscode/settings.json
+.idea/

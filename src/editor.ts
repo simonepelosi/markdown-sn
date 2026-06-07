@@ -1,0 +1,310 @@
+import {
+  Compartment,
+  EditorSelection,
+  EditorState,
+  type Extension,
+} from '@codemirror/state'
+import {
+  EditorView,
+  type ViewUpdate,
+  keymap,
+  highlightSpecialChars,
+  drawSelection,
+  dropCursor,
+  highlightActiveLine,
+  rectangularSelection,
+  crosshairCursor,
+} from '@codemirror/view'
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
+import { languages } from '@codemirror/language-data'
+import {
+  defaultKeymap,
+  history,
+  historyKeymap,
+  indentWithTab,
+} from '@codemirror/commands'
+import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { tags } from '@lezer/highlight'
+
+// ── Types ─────────────────────────────────────────────────────────────
+export interface EditorOptions {
+  onChange: (value: string) => void
+  onScroll: (pct: number) => void
+  onCursor: (line: number, col: number) => void
+}
+
+// ── Theme factory ─────────────────────────────────────────────────────
+function makeThemeExtension(): Extension {
+  const base = EditorView.theme({
+    '&': {
+      height: '100%',
+      background: 'var(--ed-bg)',
+      color: 'var(--ed-fg)',
+    },
+    '&.cm-focused': { outline: 'none' },
+    '.cm-scroller': { overflow: 'auto', height: '100%' },
+    '.cm-content': {
+      caretColor: 'var(--ed-cursor)',
+      padding: '20px 24px',
+    },
+    '.cm-cursor, .cm-dropCursor': {
+      borderLeftColor: 'var(--ed-cursor)',
+    },
+    '.cm-selectionBackground': {
+      background: 'var(--ed-sel) !important',
+    },
+    '&.cm-focused .cm-selectionBackground': {
+      background: 'var(--ed-sel-focused) !important',
+    },
+    '.cm-activeLine': { background: 'var(--ed-active-line)' },
+    '.cm-gutters': { display: 'none' },
+    '.cm-activeLineGutter': { display: 'none' },
+  })
+
+  const highlight = HighlightStyle.define([
+    {
+      tag: [tags.heading1, tags.heading2, tags.heading3,
+            tags.heading4, tags.heading5, tags.heading6],
+      color: 'var(--syn-h)', fontWeight: '700',
+    },
+    { tag: tags.heading1, fontSize: '1.4em' },
+    { tag: tags.heading2, fontSize: '1.25em' },
+    { tag: tags.heading3, fontSize: '1.1em' },
+    { tag: tags.strong, fontWeight: '700', color: 'var(--syn-strong)' },
+    { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--syn-em)' },
+    { tag: tags.strikethrough, textDecoration: 'line-through' },
+    { tag: tags.link, color: 'var(--syn-link)', textDecoration: 'underline' },
+    { tag: tags.url, color: 'var(--syn-link)' },
+    {
+      tag: tags.monospace,
+      fontFamily: 'var(--ed-mono)',
+      color: 'var(--syn-code)',
+    },
+    { tag: tags.quote, color: 'var(--syn-quote)', fontStyle: 'italic' },
+    { tag: tags.list, color: 'var(--syn-list)' },
+    { tag: tags.meta, color: 'var(--syn-meta)', opacity: '0.7' },
+    { tag: tags.processingInstruction, color: 'var(--syn-meta)' },
+    { tag: tags.contentSeparator, color: 'var(--syn-hr)' },
+    { tag: tags.comment, color: 'var(--syn-quote)', fontStyle: 'italic' },
+  ])
+
+  return [base, syntaxHighlighting(highlight)]
+}
+
+// ── Wrap / insert helpers ─────────────────────────────────────────────
+function wrapSelection(
+  view: EditorView,
+  before: string,
+  after: string,
+  placeholder: string,
+): boolean {
+  const { state } = view
+  const changes = state.changeByRange((range) => {
+    const selected = state.doc.sliceString(range.from, range.to)
+    const text = selected || placeholder
+    return {
+      changes: { from: range.from, to: range.to, insert: `${before}${text}${after}` },
+      range: EditorSelection.range(
+        range.from + before.length,
+        range.from + before.length + text.length,
+      ),
+    }
+  })
+  view.dispatch(changes)
+  return true
+}
+
+function insertAtLineStart(view: EditorView, prefix: string): boolean {
+  const { state } = view
+  const changes = state.changeByRange((range) => {
+    const line = state.doc.lineAt(range.from)
+    const current = line.text
+    // Toggle: remove if already present, add if not
+    if (current.startsWith(prefix)) {
+      return {
+        changes: { from: line.from, to: line.from + prefix.length, insert: '' },
+        range: EditorSelection.range(
+          range.from - prefix.length,
+          range.head - prefix.length,
+        ),
+      }
+    }
+    return {
+      changes: { from: line.from, insert: prefix },
+      range: EditorSelection.range(
+        range.from + prefix.length,
+        range.head + prefix.length,
+      ),
+    }
+  })
+  view.dispatch(changes)
+  return true
+}
+
+// ── Editor class ──────────────────────────────────────────────────────
+export class Editor {
+  private view: EditorView
+  private themeComp = new Compartment()
+  private spellComp = new Compartment()
+
+  constructor(container: HTMLElement, private opts: EditorOptions) {
+    const state = EditorState.create({
+      doc: '',
+      extensions: this.buildExtensions(),
+    })
+    this.view = new EditorView({ state, parent: container })
+  }
+
+  private buildExtensions(): Extension[] {
+    return [
+      history(),
+      highlightSpecialChars(),
+      drawSelection(),
+      dropCursor(),
+      highlightActiveLine(),
+      rectangularSelection(),
+      crosshairCursor(),
+      highlightSelectionMatches(),
+      EditorView.lineWrapping,
+      markdown({
+        base: markdownLanguage,
+        codeLanguages: languages,
+      }),
+      keymap.of([
+        ...defaultKeymap,
+        ...historyKeymap,
+        ...searchKeymap,
+        indentWithTab,
+        {
+          key: 'Mod-b',
+          run: (v) => wrapSelection(v, '**', '**', 'bold text'),
+        },
+        {
+          key: 'Mod-i',
+          run: (v) => wrapSelection(v, '_', '_', 'italic text'),
+        },
+        {
+          key: 'Mod-`',
+          run: (v) => wrapSelection(v, '`', '`', 'code'),
+        },
+        {
+          key: 'Mod-Shift-x',
+          run: (v) => wrapSelection(v, '~~', '~~', 'strikethrough'),
+        },
+        {
+          key: 'Mod-k',
+          run: (v) => wrapSelection(v, '[', '](url)', 'link text'),
+        },
+        {
+          key: 'Mod-Shift-k',
+          run: (v) => wrapSelection(v, '![', '](url)', 'alt text'),
+        },
+        {
+          key: 'Mod-Shift-7',
+          run: (v) => insertAtLineStart(v, '1. '),
+        },
+        {
+          key: 'Mod-Shift-8',
+          run: (v) => insertAtLineStart(v, '- '),
+        },
+        {
+          key: 'Mod-Shift-.',
+          run: (v) => insertAtLineStart(v, '> '),
+        },
+      ]),
+      this.themeComp.of(makeThemeExtension()),
+      this.spellComp.of(
+        EditorView.contentAttributes.of({ spellcheck: 'false' }),
+      ),
+      EditorView.domEventHandlers({
+        scroll: (_e, view) => {
+          const el = view.scrollDOM
+          const max = el.scrollHeight - el.clientHeight
+          if (max > 0) this.opts.onScroll(el.scrollTop / max)
+          return false
+        },
+      }),
+      EditorView.updateListener.of((update: ViewUpdate) => {
+        if (update.docChanged) {
+          this.opts.onChange(update.state.doc.toString())
+        }
+        if (update.selectionSet) {
+          const { head } = update.state.selection.main
+          const line = update.state.doc.lineAt(head)
+          this.opts.onCursor(line.number, head - line.from)
+        }
+      }),
+    ]
+  }
+
+  // ── Public API ────────────────────────────────────────────────────
+  getValue(): string {
+    return this.view.state.doc.toString()
+  }
+
+  setValue(text: string): void {
+    this.view.dispatch(
+      this.view.state.update({
+        changes: { from: 0, to: this.view.state.doc.length, insert: text },
+        selection: { anchor: 0 },
+      }),
+    )
+  }
+
+  focus(): void {
+    this.view.focus()
+  }
+
+  clearHistory(): void {
+    // Replace state without history
+    const text = this.getValue()
+    this.view.setState(
+      EditorState.create({
+        doc: text,
+        extensions: this.buildExtensions(),
+      }),
+    )
+  }
+
+  setSpellcheck(enabled: boolean): void {
+    this.view.dispatch({
+      effects: this.spellComp.reconfigure(
+        EditorView.contentAttributes.of({
+          spellcheck: String(enabled),
+        }),
+      ),
+    })
+  }
+
+  // Toolbar actions
+  wrapSelection(before: string, after: string, placeholder: string): void {
+    wrapSelection(this.view, before, after, placeholder)
+    this.view.focus()
+  }
+
+  insertAtLineStart(prefix: string): void {
+    insertAtLineStart(this.view, prefix)
+    this.view.focus()
+  }
+
+  insertText(text: string): void {
+    const { state } = this.view
+    const { from, to } = state.selection.main
+    this.view.dispatch(
+      state.update({
+        changes: { from, to, insert: text },
+        selection: { anchor: from + text.length },
+      }),
+    )
+    this.view.focus()
+  }
+
+  undo(): void {
+    import('@codemirror/commands').then(({ undo }) => undo(this.view))
+  }
+
+  redo(): void {
+    import('@codemirror/commands').then(({ redo }) => redo(this.view))
+  }
+}
