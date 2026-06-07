@@ -89,7 +89,23 @@ function makeThemeExtension(): Extension {
     { tag: tags.punctuation,   color: 'var(--syn-fmt)', opacity: '0.55' },
     // Meta / processing instructions
     { tag: [tags.meta, tags.processingInstruction], color: 'var(--syn-meta)' },
-    { tag: tags.comment,       color: 'var(--syn-quote)', fontStyle: 'italic' },
+    // ── Embedded fenced-code tokens (Dracula) ──────────────────────────
+    { tag: [tags.comment, tags.lineComment, tags.blockComment],
+      color: 'var(--syn-cmt)', fontStyle: 'italic' },
+    { tag: tags.keyword, color: 'var(--syn-kw)' },
+    { tag: [tags.string, tags.special(tags.string), tags.regexp],
+      color: 'var(--syn-str)' },
+    { tag: [tags.number, tags.bool, tags.atom, tags.literal],
+      color: 'var(--syn-num)' },
+    { tag: [tags.typeName, tags.className, tags.namespace, tags.tagName],
+      color: 'var(--syn-cls)' },
+    { tag: [tags.function(tags.variableName), tags.function(tags.propertyName),
+            tags.definition(tags.function(tags.variableName)), tags.labelName],
+      color: 'var(--syn-fn)' },
+    { tag: [tags.operator, tags.logicOperator, tags.arithmeticOperator,
+            tags.compareOperator, tags.definitionOperator],
+      color: 'var(--syn-op)' },
+    { tag: [tags.propertyName, tags.attributeName], color: 'var(--syn-cls)' },
   ])
 
   return [base, syntaxHighlighting(highlight)]

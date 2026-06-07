@@ -1,6 +1,5 @@
 /* ── Imports ───────────────────────────────────────────────────────── */
 @import 'katex/dist/katex.min.css';
-@import 'highlight.js/styles/github.css';
 
 /* ── CSS variables ─────────────────────────────────────────────────── */
 /*
@@ -26,14 +25,19 @@
   --ed-mono: var(--sn-stylekit-monospace-font,   ui-monospace, 'Cascadia Code', monospace);
   --ed-size: 15px;
 
-  /* ── Chrome (toolbar/statusbar) — hardcoded, never SN-overrideable ── */
-  --chrome-bg:     #f0f0f2;
-  --chrome-border: #d4d4d8;
-  --chrome-fg:     #52525b;
-  --chrome-fg-h:   #18181b;
-  --chrome-hover:  #e4e4e7;
-  --chrome-active: #2563eb;
-  --chrome-active-fg: #ffffff;
+  /* ── Chrome (toolbar/statusbar) — follows SN theme ────────────────── */
+  /* Uses SN's secondary/contrast background so it reads as a chrome bar
+   * distinct from the editor surface. A guaranteed 1px border on the
+   * toolbar/statusbar keeps them delineated even if a theme makes the
+   * backgrounds match. Fallbacks apply only when running standalone. */
+  --chrome-bg:     var(--sn-stylekit-secondary-background-color,
+                     var(--sn-stylekit-contrast-background-color, #f0f0f2));
+  --chrome-border: var(--sn-stylekit-border-color,        #d4d4d8);
+  --chrome-fg:     var(--sn-stylekit-passive-color-1,      #52525b);
+  --chrome-fg-h:   var(--sn-stylekit-foreground-color,     #18181b);
+  --chrome-hover:  var(--sn-stylekit-passive-color-3,      #e4e4e7);
+  --chrome-active: var(--sn-stylekit-info-color,           #2563eb);
+  --chrome-active-fg: var(--sn-stylekit-info-contrast-color, #ffffff);
 
   /* ── Content surface (follow SN theme) ───────────────────────────── */
   --bg:     var(--sn-stylekit-background-color,           #ffffff);
@@ -60,26 +64,34 @@
   --pv-link:      var(--sn-stylekit-info-color,           #2563eb);
   --pv-code-fg:   #dc2626;
   --pv-code-bg:   #f3f4f6;
-  --pv-pre-bg:    #f3f4f6;
+  --pv-pre-bg:    #282a36;            /* Dracula code island, both themes */
   --pv-bq-border: var(--sn-stylekit-border-color,         #e5e7eb);
   --pv-bq-text:   var(--sn-stylekit-neutral-color,        #6b7280);
   --pv-tbl-border: var(--sn-stylekit-border-color,        #e5e7eb);
   --pv-hr:        var(--sn-stylekit-border-color,         #e5e7eb);
 
-  /* ── Syntax tokens — vivid light palette ──────────────────────────── */
-  --syn-h1:     #7c3aed;
-  --syn-h2:     #2563eb;
-  --syn-h3:     #0891b2;
-  --syn-h:      #374151;
-  --syn-strong: #111827;
-  --syn-em:     #374151;
-  --syn-link:   #2563eb;
-  --syn-code:   #dc2626;
-  --syn-quote:  #6b7280;
-  --syn-list:   #374151;
-  --syn-meta:   #9ca3af;
-  --syn-hr:     #d1d5db;
-  --syn-fmt:    #9ca3af;
+  /* ── Syntax tokens — Dracula-derived, darkened for light surfaces ─── */
+  --syn-h1:     #d6336c;   /* pink   */
+  --syn-h2:     #7048e8;   /* purple */
+  --syn-h3:     #0c8599;   /* cyan   */
+  --syn-h:      #343a40;
+  --syn-strong: #1a1a2e;
+  --syn-em:     #9c36b5;   /* magenta */
+  --syn-link:   #1971c2;
+  --syn-code:   #e8590c;   /* orange */
+  --syn-quote:  #868e96;
+  --syn-list:   #364fc7;
+  --syn-meta:   #adb5bd;
+  --syn-hr:     #ced4da;
+  --syn-fmt:    #adb5bd;
+  /* Embedded fenced-code tokens (editor) */
+  --syn-kw:     #c2255c;   /* keyword  — pink   */
+  --syn-str:    #2b8a3e;   /* string   — green  */
+  --syn-num:    #6741d9;   /* number   — purple */
+  --syn-cmt:    #868e96;   /* comment  — grey   */
+  --syn-fn:     #1971c2;   /* function — blue   */
+  --syn-cls:    #0c8599;   /* type     — cyan   */
+  --syn-op:     #c2255c;   /* operator — pink   */
 }
 
 /* ── Dark mode ─────────────────────────────────────────────────────── */
@@ -90,14 +102,15 @@
  *          provide every variable.
  */
 .dark {
-  /* Chrome — hardcoded Dracula, SN cannot interfere */
-  --chrome-bg:     #44475a;
-  --chrome-border: #6272a4;
-  --chrome-fg:     #6272a4;
-  --chrome-fg-h:   #f8f8f2;
-  --chrome-hover:  #44475a;
-  --chrome-active: #bd93f9;
-  --chrome-active-fg: #282a36;
+  /* Chrome — follows SN dark theme; Dracula fallbacks when standalone */
+  --chrome-bg:     var(--sn-stylekit-secondary-background-color,
+                     var(--sn-stylekit-contrast-background-color, #21222c));
+  --chrome-border: var(--sn-stylekit-border-color,        #44475a);
+  --chrome-fg:     var(--sn-stylekit-passive-color-1,      #6272a4);
+  --chrome-fg-h:   var(--sn-stylekit-foreground-color,     #f8f8f2);
+  --chrome-hover:  var(--sn-stylekit-passive-color-3,      #343746);
+  --chrome-active: var(--sn-stylekit-info-color,           #bd93f9);
+  --chrome-active-fg: var(--sn-stylekit-info-contrast-color, #282a36);
 
   /* Content — Dracula fallbacks when SN vars missing */
   --bg:     var(--sn-stylekit-background-color,           #282a36);
@@ -121,26 +134,34 @@
   --pv-link:      var(--sn-stylekit-info-color,           #8be9fd);
   --pv-code-fg:   #ffb86c;
   --pv-code-bg:   #44475a;
-  --pv-pre-bg:    #1e1f29;
+  --pv-pre-bg:    #282a36;
   --pv-bq-border: #6272a4;
   --pv-bq-text:   #6272a4;
   --pv-tbl-border: #44475a;
   --pv-hr:        #44475a;
 
-  /* Dracula syntax tokens */
+  /* Syntax tokens — full Dracula */
   --syn-h1:     #ff79c6;
   --syn-h2:     #bd93f9;
   --syn-h3:     #8be9fd;
-  --syn-h:      #cdd6f4;
-  --syn-strong: #f8f8f2;
+  --syn-h:      #f8f8f2;
+  --syn-strong: #ffffff;
   --syn-em:     #f1fa8c;
   --syn-link:   #8be9fd;
   --syn-code:   #ffb86c;
   --syn-quote:  #6272a4;
-  --syn-list:   #f8f8f2;
+  --syn-list:   #bd93f9;
   --syn-meta:   #6272a4;
   --syn-hr:     #44475a;
   --syn-fmt:    #6272a4;
+  /* Embedded fenced-code tokens */
+  --syn-kw:     #ff79c6;
+  --syn-str:    #f1fa8c;
+  --syn-num:    #bd93f9;
+  --syn-cmt:    #6272a4;
+  --syn-fn:     #50fa7b;
+  --syn-cls:    #8be9fd;
+  --syn-op:     #ff79c6;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
@@ -377,7 +398,7 @@ html, body {
   border-radius: var(--radius);
   margin: 1em 0;
   overflow-x: auto;
-  border: 1px solid var(--border);
+  border: 1px solid #44475a;
 }
 .preview-content pre code {
   display: block;
@@ -400,43 +421,38 @@ html, body {
 .math-inline { display: inline; }
 .math-error  { color: var(--pv-code-fg); font-family: var(--ed-mono); font-size: .875em; opacity: .7; }
 
-/* ── HLjs: Dracula dark theme ──────────────────────────────────────── */
-.dark .hljs                       { background: var(--pv-pre-bg); color: #f8f8f2; }
-.dark .hljs-comment,
-.dark .hljs-quote                 { color: #6272a4; }
-.dark .hljs-keyword,
-.dark .hljs-selector-tag,
-.dark .hljs-meta .hljs-keyword    { color: #ff79c6; }
-.dark .hljs-string,
-.dark .hljs-attr,
-.dark .hljs-addition,
-.dark .hljs-meta .hljs-string     { color: #f1fa8c; }
-.dark .hljs-number,
-.dark .hljs-selector-attr,
-.dark .hljs-selector-pseudo,
-.dark .hljs-literal,
-.dark .hljs-variable,
-.dark .hljs-template-variable,
-.dark .hljs-type                  { color: #bd93f9; }
-.dark .hljs-built_in,
-.dark .hljs-title.class_,
-.dark .hljs-class .hljs-title     { color: #8be9fd; }
-.dark .hljs-symbol,
-.dark .hljs-bullet,
-.dark .hljs-link,
-.dark .hljs-meta,
-.dark .hljs-selector-id,
-.dark .hljs-title                 { color: #50fa7b; }
-.dark .hljs-name,
-.dark .hljs-tag,
-.dark .hljs-deletion,
-.dark .hljs-subst                 { color: #ff5555; }
-.dark .hljs-section               { color: #ff79c6; font-weight: bold; }
-.dark .hljs-regexp,
-.dark .hljs-attribute             { color: #ffb86c; }
-.dark .hljs-strong                { font-weight: bold; }
-.dark .hljs-emphasis              { font-style: italic; }
-.dark .hljs-link                  { text-decoration: underline; }
+/* ── Code blocks: Dracula island (always dark, both page themes) ────── */
+.preview-content pre code.hljs   { color: #f8f8f2; background: transparent; }
+.preview-content .hljs-comment,
+.preview-content .hljs-quote     { color: #6272a4; font-style: italic; }
+.preview-content .hljs-keyword,
+.preview-content .hljs-selector-tag,
+.preview-content .hljs-meta .hljs-keyword { color: #ff79c6; }
+.preview-content .hljs-string,
+.preview-content .hljs-attr,
+.preview-content .hljs-addition  { color: #f1fa8c; }
+.preview-content .hljs-number,
+.preview-content .hljs-literal,
+.preview-content .hljs-variable,
+.preview-content .hljs-template-variable,
+.preview-content .hljs-type      { color: #bd93f9; }
+.preview-content .hljs-built_in,
+.preview-content .hljs-title.class_,
+.preview-content .hljs-class .hljs-title { color: #8be9fd; }
+.preview-content .hljs-title.function_,
+.preview-content .hljs-symbol,
+.preview-content .hljs-bullet,
+.preview-content .hljs-meta,
+.preview-content .hljs-section   { color: #50fa7b; }
+.preview-content .hljs-name,
+.preview-content .hljs-tag,
+.preview-content .hljs-deletion,
+.preview-content .hljs-subst     { color: #ff5555; }
+.preview-content .hljs-regexp,
+.preview-content .hljs-attribute { color: #ffb86c; }
+.preview-content .hljs-link      { color: #8be9fd; text-decoration: underline; }
+.preview-content .hljs-strong    { font-weight: bold; }
+.preview-content .hljs-emphasis  { font-style: italic; }
 
 /* ── Status bar ────────────────────────────────────────────────────── */
 #statusbar {

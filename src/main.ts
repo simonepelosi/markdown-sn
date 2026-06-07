@@ -68,15 +68,26 @@ function isMobile(): boolean {
 }
 
 // ── Theme ─────────────────────────────────────────────────────────────
-// CSS vars reference --sn-stylekit-* directly; SN theme stylesheets define
-// those on :root and the cascade handles all colour changes automatically.
-// The only job left for JS is toggling .dark so the hljs overrides apply.
+// All surface CSS vars reference --sn-stylekit-* directly, so SN theme
+// stylesheets drive every colour through the cascade with zero JS.
+// JS only toggles .dark so the editor/preview pick the matching syntax
+// palette. SN themes expose --sn-stylekit-theme-type ('light' | 'dark') —
+// the authoritative signal. Fall back to background luminance, then OS
+// preference, only when running standalone (no SN theme injected).
 function updateTheme(): void {
-  const snBg = getComputedStyle(document.documentElement)
-    .getPropertyValue('--sn-stylekit-background-color').trim()
-  const isDark = snBg
-    ? perceivedLuminance(snBg) < 128
-    : window.matchMedia('(prefers-color-scheme: dark)').matches
+  const root = getComputedStyle(document.documentElement)
+  const themeType = root.getPropertyValue('--sn-stylekit-theme-type').trim()
+  let isDark: boolean
+  if (themeType === 'dark') {
+    isDark = true
+  } else if (themeType === 'light') {
+    isDark = false
+  } else {
+    const snBg = root.getPropertyValue('--sn-stylekit-background-color').trim()
+    isDark = snBg
+      ? perceivedLuminance(snBg) < 128
+      : window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
   document.documentElement.classList.toggle('dark', isDark)
 }
 
