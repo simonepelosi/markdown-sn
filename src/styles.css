@@ -212,7 +212,14 @@ html, body {
   padding: 0 8px;
   background: var(--chrome-bg);
   border-bottom: 1px solid var(--chrome-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
+#toolbar::-webkit-scrollbar { display: none; }
+/* Keep controls at natural size so a narrow toolbar scrolls horizontally
+   instead of squashing the buttons; the spacer still absorbs slack. */
+#toolbar > *:not(.toolbar-spacer) { flex-shrink: 0; }
 
 /* Collapsed: shrink to toggle-button height, hide everything else */
 #toolbar.collapsed {
@@ -298,6 +305,14 @@ html, body {
 .toolbar-icon-btn:hover,
 .toolbar-toggle-btn:hover { color: var(--chrome-fg-h); }
 .toolbar-icon-btn.active  { color: var(--chrome-active); }
+
+/* Collapse toggle stays pinned to the right edge while the bar scrolls */
+.toolbar-toggle-btn {
+  position: sticky;
+  right: 0;
+  background: var(--chrome-bg);
+  box-shadow: -8px 0 8px var(--chrome-bg);
+}
 
 /* ── Workspace ─────────────────────────────────────────────────────── */
 #workspace {
@@ -513,22 +528,8 @@ body[data-ready] #workspace       { opacity: 1; transition: opacity .15s; }
   .fmt-btn  { width: 34px; height: 34px; }
   .mode-btn { padding: 5px 9px; font-size: 12px; }
   .toolbar-sep { display: none; }
-  #toolbar {
-    gap: 0;
-    padding: 0 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-  }
-  #toolbar::-webkit-scrollbar { display: none; }
-  .toolbar-toggle-btn {
-    position: sticky;
-    right: 0;
-    background: var(--chrome-bg);
-    box-shadow: -6px 0 8px var(--chrome-bg);
-    width: 34px;
-    height: 34px;
-  }
+  #toolbar { gap: 0; padding: 0 8px; }
+  .toolbar-toggle-btn { width: 34px; height: 34px; }
   .toolbar-toggle-btn::before { content: ''; position: absolute; inset: -6px; }
   .preview-content { padding: 16px; font-size: 15px; }
   #editor-pane .cm-content { padding: 16px; }
