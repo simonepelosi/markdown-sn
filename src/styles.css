@@ -4,10 +4,11 @@
 
 /* ── CSS variables ─────────────────────────────────────────────────── */
 :root {
-  --toolbar-h:    42px;
-  --statusbar-h:  26px;
-  --divider-w:    5px;
-  --radius:       4px;
+  --toolbar-h:           42px;
+  --toolbar-collapsed-h: 28px;
+  --statusbar-h:         26px;
+  --divider-w:           5px;
+  --radius:              4px;
 
   /* Light defaults — overridden by JS from SN theme vars */
   --bg:            #ffffff;
@@ -133,7 +134,21 @@ html, body {
   border-bottom: 1px solid var(--border);
   overflow: hidden;
   user-select: none;
+  /* Smooth collapse/expand */
+  transition: height 0.2s ease, flex-basis 0.2s ease;
 }
+
+/* Collapsed: shrink to toggle-button height, hide everything else */
+#toolbar.collapsed {
+  height: var(--toolbar-collapsed-h);
+  flex-basis: var(--toolbar-collapsed-h);
+}
+#toolbar.collapsed > :not(.toolbar-toggle-btn) {
+  display: none;
+}
+/* Chevron rotates to point down (= "expand") when collapsed */
+.toolbar-toggle-btn svg { transition: transform 0.2s ease; }
+#toolbar.collapsed .toolbar-toggle-btn svg { transform: rotate(180deg); }
 
 .toolbar-group  { display: flex; align-items: center; gap: 1px; }
 
@@ -193,6 +208,23 @@ html, body {
 .fmt-btn:hover  { background: var(--bg3); color: var(--fg); }
 .fmt-btn svg    { pointer-events: none; }
 
+/* Toolbar collapse toggle — always last child, never hidden */
+.toolbar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--fg3);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color .1s;
+}
+.toolbar-toggle-btn:hover { color: var(--fg); }
+
 /* ── Workspace ─────────────────────────────────────────────────────── */
 #workspace {
   flex: 1;
@@ -226,8 +258,6 @@ html, body {
 }
 #editor-pane .cm-content {
   padding: 20px 24px;
-  max-width: 820px;
-  margin: 0 auto;
   caret-color: var(--ed-cursor);
   color: var(--ed-fg);
 }
@@ -264,9 +294,7 @@ html, body {
 }
 
 .preview-content {
-  max-width: 760px;
   width: 100%;
-  margin: 0 auto;
   padding: 24px 28px;
   font-family: var(--ed-font);
   font-size: 15.5px;
@@ -415,13 +443,38 @@ body:not([data-ready]) #workspace { opacity: 0; }
 body[data-ready] #workspace       { opacity: 1; transition: opacity .15s; }
 
 /* ── Mobile ────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .fmt-btn  { width: 26px; height: 26px; }
-  .toolbar-sep { display: none; }
-  #toolbar  { gap: 1px; padding: 0 6px; }
+@media (max-width: 680px) {
+  /* Touch-friendly format buttons */
+  .fmt-btn   { width: 34px; height: 34px; }
+  .mode-btn  { padding: 5px 9px; font-size: 12px; }
+  /* Hide separators to save space; allow horizontal scroll on overflow */
+  .toolbar-sep  { display: none; }
+  #toolbar {
+    gap: 0;
+    padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+  }
+  #toolbar::-webkit-scrollbar { display: none; }
+  /* Sticky collapse toggle on the right */
+  .toolbar-toggle-btn {
+    position: sticky;
+    right: 0;
+    background: var(--bg2);
+    box-shadow: -6px 0 8px var(--bg2);
+    width: 34px;
+    height: 34px;
+  }
+  /* Generous tap target on the toggle */
+  .toolbar-toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
   .preview-content { padding: 16px; font-size: 15px; }
   #editor-pane .cm-content { padding: 16px; }
-  /* Collapse split to edit-only on small screens */
+  /* Force edit-only in split mode */
   #workspace[data-mode='split'] #divider,
   #workspace[data-mode='split'] #preview-pane { display: none; }
   #workspace[data-mode='split'] #editor-pane  { flex: 1 1 100%; }

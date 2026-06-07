@@ -5,6 +5,7 @@ export type EditorMode = 'edit' | 'split' | 'preview'
 export interface ToolbarOptions {
   editor: Editor
   onModeChange: (mode: EditorMode) => void
+  onCollapseToggle: (collapsed: boolean) => void
 }
 
 // ── SVG icons (inline, no external font dependency) ───────────────────
@@ -33,6 +34,7 @@ type FmtItem = FmtButtonDef | 'sep'
 // ── Toolbar ───────────────────────────────────────────────────────────
 export class Toolbar {
   private currentMode: EditorMode = 'split'
+  private collapsed = false
   private readonly modeButtons: Partial<Record<EditorMode, HTMLButtonElement>> = {}
 
   constructor(
@@ -162,12 +164,30 @@ export class Toolbar {
       )
     }
 
-    // Spacer pushes mode buttons to the left
+    // Spacer + collapse toggle ────────────────────────────────────────
     const spacer = document.createElement('div')
     spacer.className = 'toolbar-spacer'
     this.container.appendChild(spacer)
 
+    const toggleBtn = document.createElement('button')
+    toggleBtn.className = 'toolbar-toggle-btn'
+    toggleBtn.title = 'Toggle toolbar'
+    toggleBtn.setAttribute('aria-label', 'Toggle toolbar')
+    // Chevron-up icon — rotates 180° via CSS when collapsed
+    toggleBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`
+    toggleBtn.addEventListener('click', () => {
+      this.collapsed = !this.collapsed
+      this.container.classList.toggle('collapsed', this.collapsed)
+      this.opts.onCollapseToggle(this.collapsed)
+    })
+    this.container.appendChild(toggleBtn)
+
     this.syncModeButtons()
+  }
+
+  setCollapsed(collapsed: boolean): void {
+    this.collapsed = collapsed
+    this.container.classList.toggle('collapsed', collapsed)
   }
 
   setMode(mode: EditorMode): void {

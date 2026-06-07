@@ -3,6 +3,8 @@
   "name": "Markdown Pro",
   "content_type": "SN|Component",
   "area": "editor-editor",
+  "note_type": "markdown",
+  "file_type": "md",
   "version": "1.0.0",
   "url": "https://simonepelosi.github.io/markdown-sn/"
 }
