@@ -567,6 +567,18 @@ html, body {
 .preview-content .hljs-strong    { font-weight: bold; }
 .preview-content .hljs-emphasis  { font-style: italic; }
 
+/* Language-specific polish: highlight.js tags Bash/Python differently from
+   JS/HTML, so small scoped overrides keep those languages from looking flat. */
+.preview-content .language-bash .hljs-meta { color: var(--code-cmt); font-style: italic; }
+.preview-content .language-bash .hljs-variable,
+.preview-content .language-bash .hljs-template-variable { color: var(--code-regexp); }
+.preview-content .language-bash .hljs-built_in { color: var(--code-fn); }
+.preview-content .language-bash .hljs-literal { color: var(--code-num); }
+.preview-content .language-python .hljs-meta { color: var(--code-regexp); }
+.preview-content .language-python .hljs-built_in { color: var(--code-cls); }
+.preview-content .language-python .hljs-title.function_ { color: var(--code-fn); }
+.preview-content .language-python .hljs-title.class_ { color: var(--code-cls); }
+
 /* ── Status bar ────────────────────────────────────────────────────── */
 #statusbar {
   flex: 0 0 var(--statusbar-h);
