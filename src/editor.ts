@@ -89,23 +89,32 @@ function makeThemeExtension(): Extension {
     { tag: tags.punctuation,   color: 'var(--syn-fmt)', opacity: '0.55' },
     // Meta / processing instructions
     { tag: [tags.meta, tags.processingInstruction], color: 'var(--syn-meta)' },
-    // ── Embedded fenced-code tokens (Dracula) ──────────────────────────
+    // ── Embedded fenced-code tokens ───────────────────────────────────
     { tag: [tags.comment, tags.lineComment, tags.blockComment],
       color: 'var(--syn-cmt)', fontStyle: 'italic' },
     { tag: tags.keyword, color: 'var(--syn-kw)' },
-    { tag: [tags.string, tags.special(tags.string), tags.regexp],
-      color: 'var(--syn-str)' },
+    { tag: [tags.regexp, tags.escape, tags.special(tags.string)],
+      color: 'var(--syn-regexp)' },
+    { tag: tags.string, color: 'var(--syn-str)' },
     { tag: [tags.number, tags.bool, tags.atom, tags.literal],
       color: 'var(--syn-num)' },
-    { tag: [tags.typeName, tags.className, tags.namespace, tags.tagName],
+    { tag: [tags.typeName, tags.className, tags.namespace],
       color: 'var(--syn-cls)' },
+    { tag: [tags.tagName, tags.angleBracket], color: 'var(--syn-tag)' },
     { tag: [tags.function(tags.variableName), tags.function(tags.propertyName),
             tags.definition(tags.function(tags.variableName)), tags.labelName],
       color: 'var(--syn-fn)' },
+    { tag: [tags.propertyName, tags.attributeName,
+            tags.definition(tags.propertyName)], color: 'var(--syn-prop)' },
+    { tag: [tags.variableName, tags.definition(tags.variableName),
+            tags.special(tags.variableName)], color: 'var(--syn-var)' },
     { tag: [tags.operator, tags.logicOperator, tags.arithmeticOperator,
             tags.compareOperator, tags.definitionOperator],
       color: 'var(--syn-op)' },
-    { tag: [tags.propertyName, tags.attributeName], color: 'var(--syn-cls)' },
+    { tag: [tags.bracket, tags.squareBracket, tags.paren, tags.brace,
+            tags.separator], color: 'var(--syn-punc)' },
+    { tag: tags.inserted, color: 'var(--syn-ins)' },
+    { tag: tags.deleted, color: 'var(--syn-del)' },
   ])
 
   return [base, syntaxHighlighting(highlight)]

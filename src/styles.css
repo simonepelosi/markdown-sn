@@ -99,9 +99,9 @@
                     var(--sn-stylekit-editor-foreground-color, #111827));
   --pv-heading:   var(--sn-stylekit-foreground-color,     #111827);
   --pv-link:      var(--sn-stylekit-info-color,           #2563eb);
-  --pv-code-fg:   #dc2626;
-  --pv-code-bg:   #f3f4f6;
-  --pv-pre-bg:    #282a36;            /* Dracula code island, both themes */
+  --pv-code-fg:   var(--syn-code);
+  --pv-code-bg:   #fff3ea;
+  --pv-pre-bg:    var(--code-bg);      /* Dracula code island, both themes */
   --pv-bq-border: var(--sn-stylekit-border-color,         #e5e7eb);
   --pv-bq-text:   var(--sn-stylekit-neutral-color,        #6b7280);
   --pv-tbl-border: var(--sn-stylekit-border-color,        #e5e7eb);
@@ -121,7 +121,8 @@
   --syn-meta:   #9aa5b1;
   --syn-hr:     #cbd2d9;
   --syn-fmt:    #9aa5b1;
-  /* Embedded fenced-code tokens (editor) */
+  --syn-punc:   #7b8794;
+  /* Embedded fenced-code tokens (editor, light surface) */
   --syn-kw:     #c2185b;   /* keyword  — pink   */
   --syn-str:    #1a7f37;   /* string   — green  */
   --syn-num:    #7c3aed;   /* number   — purple */
@@ -129,6 +130,32 @@
   --syn-fn:     #1971c2;   /* function — blue   */
   --syn-cls:    #0e7490;   /* type     — cyan   */
   --syn-op:     #c2185b;   /* operator — pink   */
+  --syn-var:    #334155;   /* variable — ink    */
+  --syn-prop:   #0e7490;   /* property — cyan   */
+  --syn-tag:    #7c3aed;   /* tag      — purple */
+  --syn-regexp: #d9480f;   /* regexp   — orange */
+  --syn-del:    #c92a2a;
+  --syn-ins:    #1a7f37;
+
+  /* Preview fenced-code island: canonical Dracula on a dark island. */
+  --code-bg:     #282a36;
+  --code-fg:     #f8f8f2;
+  --code-border: #44475a;
+  --code-cmt:    #6272a4;
+  --code-kw:     #ff79c6;
+  --code-str:    #f1fa8c;
+  --code-num:    #bd93f9;
+  --code-fn:     #50fa7b;
+  --code-cls:    #8be9fd;
+  --code-op:     #ff79c6;
+  --code-var:    #f8f8f2;
+  --code-prop:   #8be9fd;
+  --code-tag:    #ff79c6;
+  --code-attr:   #50fa7b;
+  --code-regexp: #ffb86c;
+  --code-del:    #ff5555;
+  --code-ins:    #50fa7b;
+  --code-punc:   #f8f8f2;
 }
 
 /* ── Dark mode ─────────────────────────────────────────────────────── */
@@ -177,9 +204,9 @@
                     var(--sn-stylekit-editor-foreground-color, #d4d4d4));
   --pv-heading:   var(--sn-stylekit-foreground-color,     #ececec);
   --pv-link:      var(--sn-stylekit-info-color,           #4aa3ff);
-  --pv-code-fg:   var(--sn-stylekit-editor-foreground-color, #d4d4d4);
+  --pv-code-fg:   var(--syn-code);
   --pv-code-bg:   var(--sn-stylekit-contrast-background-color, #2a2a2b);
-  --pv-pre-bg:    #282a36;            /* Dracula code island (syntax) */
+  --pv-pre-bg:    var(--code-bg);      /* Dracula code island (syntax) */
   --pv-bq-border: var(--sn-stylekit-border-color,         #3a3a3a);
   --pv-bq-text:   var(--sn-stylekit-neutral-color,        #9a9a9a);
   --pv-tbl-border: var(--sn-stylekit-border-color,        #3a3a3a);
@@ -199,6 +226,7 @@
   --syn-meta:   #6272a4;
   --syn-hr:     #44475a;
   --syn-fmt:    #6272a4;
+  --syn-punc:   #6272a4;
   /* Embedded fenced-code tokens */
   --syn-kw:     #ff79c6;   /* keyword  — pink   */
   --syn-str:    #f1fa8c;   /* string   — yellow */
@@ -207,6 +235,12 @@
   --syn-fn:     #50fa7b;   /* function — green  */
   --syn-cls:    #8be9fd;   /* type     — cyan   */
   --syn-op:     #ff79c6;   /* operator — pink   */
+  --syn-var:    #f8f8f2;
+  --syn-prop:   #8be9fd;
+  --syn-tag:    #ff79c6;
+  --syn-regexp: #ffb86c;
+  --syn-del:    #ff5555;
+  --syn-ins:    #50fa7b;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
@@ -454,19 +488,37 @@ html, body {
   border-radius: 3px;
 }
 .preview-content pre {
+  position: relative;
   background: var(--pv-pre-bg);
-  border-radius: var(--radius);
-  margin: 1em 0;
+  border-radius: calc(var(--radius) + 2px);
+  margin: 1.15em 0;
   overflow-x: auto;
-  border: 1px solid #44475a;
+  border: 1px solid var(--code-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+.preview-content pre[data-lang]::before {
+  content: attr(data-lang);
+  position: sticky;
+  left: calc(100% - 4.25em);
+  display: block;
+  width: max-content;
+  margin: .55em .65em -.15em auto;
+  padding: .1em .45em;
+  border: 1px solid var(--code-border);
+  border-radius: 999px;
+  color: var(--code-cmt);
+  background: rgba(68, 71, 90, .45);
+  font: 600 10px/1.4 var(--ed-mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 .preview-content pre code {
   display: block;
-  padding: 1em;
+  padding: 1.1em;
   background: transparent;
   color: inherit;
   font-size: .875em;
-  line-height: 1.6;
+  line-height: 1.65;
   border-radius: 0;
 }
 .preview-content table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .9375em; }
@@ -482,35 +534,36 @@ html, body {
 .math-error  { color: var(--pv-code-fg); font-family: var(--ed-mono); font-size: .875em; opacity: .7; }
 
 /* ── Code blocks: Dracula island (always dark, both page themes) ────── */
-.preview-content pre code.hljs   { color: #f8f8f2; background: transparent; }
+.preview-content pre code.hljs   { color: var(--code-fg); background: transparent; }
 .preview-content .hljs-comment,
-.preview-content .hljs-quote     { color: #6272a4; font-style: italic; }
+.preview-content .hljs-quote     { color: var(--code-cmt); font-style: italic; }
 .preview-content .hljs-keyword,
 .preview-content .hljs-selector-tag,
-.preview-content .hljs-meta .hljs-keyword { color: #ff79c6; }
+.preview-content .hljs-meta .hljs-keyword { color: var(--code-kw); }
 .preview-content .hljs-string,
-.preview-content .hljs-attr,
-.preview-content .hljs-addition  { color: #f1fa8c; }
+.preview-content .hljs-addition  { color: var(--code-str); }
 .preview-content .hljs-number,
 .preview-content .hljs-literal,
+.preview-content .hljs-type      { color: var(--code-num); }
 .preview-content .hljs-variable,
-.preview-content .hljs-template-variable,
-.preview-content .hljs-type      { color: #bd93f9; }
+.preview-content .hljs-template-variable { color: var(--code-var); }
 .preview-content .hljs-built_in,
 .preview-content .hljs-title.class_,
-.preview-content .hljs-class .hljs-title { color: #8be9fd; }
+.preview-content .hljs-class .hljs-title { color: var(--code-cls); }
 .preview-content .hljs-title.function_,
 .preview-content .hljs-symbol,
 .preview-content .hljs-bullet,
-.preview-content .hljs-meta,
-.preview-content .hljs-section   { color: #50fa7b; }
+.preview-content .hljs-section   { color: var(--code-fn); }
+.preview-content .hljs-property,
+.preview-content .hljs-attr      { color: var(--code-prop); }
 .preview-content .hljs-name,
-.preview-content .hljs-tag,
-.preview-content .hljs-deletion,
-.preview-content .hljs-subst     { color: #ff5555; }
-.preview-content .hljs-regexp,
-.preview-content .hljs-attribute { color: #ffb86c; }
-.preview-content .hljs-link      { color: #8be9fd; text-decoration: underline; }
+.preview-content .hljs-tag       { color: var(--code-tag); }
+.preview-content .hljs-attribute { color: var(--code-attr); }
+.preview-content .hljs-regexp    { color: var(--code-regexp); }
+.preview-content .hljs-meta,
+.preview-content .hljs-subst     { color: var(--code-punc); }
+.preview-content .hljs-deletion  { color: var(--code-del); }
+.preview-content .hljs-link      { color: var(--code-cls); text-decoration: underline; }
 .preview-content .hljs-strong    { font-weight: bold; }
 .preview-content .hljs-emphasis  { font-style: italic; }
 
@@ -557,8 +610,26 @@ body[data-ready] #workspace       { opacity: 1; transition: opacity .15s; }
   .fmt-btn  { width: 34px; height: 34px; }
   .mode-btn { padding: 5px 9px; font-size: 12px; }
   .toolbar-sep { display: none; }
-  #toolbar { gap: 0; padding: 0 8px; }
-  .toolbar-toggle-btn { width: 34px; height: 34px; }
+  .toolbar-spacer { display: none; }
+  #toolbar {
+    flex: 0 0 auto;
+    min-height: var(--toolbar-h);
+    height: auto;
+    flex-wrap: wrap;
+    align-content: center;
+    row-gap: 2px;
+    column-gap: 0;
+    padding: 4px 8px;
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+  .toolbar-toggle-btn {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    margin-left: auto;
+    box-shadow: none;
+  }
   .toolbar-toggle-btn::before { content: ''; position: absolute; inset: -6px; }
   .preview-content { padding: 16px; font-size: 15px; }
   #editor-pane .cm-content { padding: 16px; }

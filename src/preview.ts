@@ -1,4 +1,4 @@
-import { marked, type MarkedExtension } from 'marked'
+import { marked, type MarkedExtension, type Tokens } from 'marked'
 import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js/lib/common'
 import DOMPurify from 'dompurify'
@@ -73,6 +73,23 @@ const mathExtension: MarkedExtension = {
   ],
 }
 
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+
+function escapeHtml(text: string, encode: boolean): string {
+  const pattern = encode
+    ? /[&<>"']/g
+    : /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g
+  return pattern.test(text)
+    ? text.replace(pattern, ch => HTML_ESCAPES[ch] ?? ch)
+    : text
+}
+
 // ── Configure marked ──────────────────────────────────────────────────
 marked.use(
   markedHighlight({
@@ -83,6 +100,23 @@ marked.use(
     },
   }),
 )
+
+marked.use({
+  renderer: {
+    code({ text, lang, escaped }: Tokens.Code): string {
+      const langMatch = (lang ?? '').match(/\S+/)
+      const language = langMatch ? langMatch[0].toLowerCase() : ''
+      const classAttr = language
+        ? ` class="hljs language-${escapeHtml(language, true)}"`
+        : ' class="hljs"'
+      const langAttr = language
+        ? ` data-lang="${escapeHtml(language, true)}"`
+        : ''
+      const code = text.replace(/\n$/, '')
+      return `<pre${langAttr}><code${classAttr}>${escaped ? code : escapeHtml(code, true)}\n</code></pre>`
+    },
+  },
+})
 
 marked.use(mathExtension)
 
@@ -108,7 +142,7 @@ export function renderMarkdown(source: string): string {
     ADD_TAGS: KATEX_TAGS,
     ADD_ATTR: [
       'encoding', 'columnalign', 'rowalign', 'rowspacing', 'columnspacing',
-      'aria-hidden',
+      'aria-hidden', 'data-lang',
     ],
     FORBID_TAGS: ['script', 'style'],
     FORBID_ATTR: [
