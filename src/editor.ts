@@ -15,17 +15,26 @@ import {
   rectangularSelection,
   crosshairCursor,
 } from '@codemirror/view'
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { languages } from '@codemirror/language-data'
 import {
   defaultKeymap,
   history,
   historyKeymap,
   indentWithTab,
+  redo,
+  undo,
 } from '@codemirror/commands'
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
+
+let markdownExtension: Promise<Extension> | null = null
+
+function loadMarkdownExtension(): Promise<Extension> {
+  markdownExtension ??= import('@codemirror/lang-markdown').then(({ markdown, markdownLanguage }) =>
+    markdown({ base: markdownLanguage }),
+  )
+  return markdownExtension
+}
 
 // ── Types ─────────────────────────────────────────────────────────────
 export interface EditorOptions {
@@ -175,6 +184,7 @@ export class Editor {
   private view: EditorView
   private themeComp = new Compartment()
   private spellComp = new Compartment()
+  private langComp = new Compartment()
 
   constructor(container: HTMLElement, private opts: EditorOptions) {
     const state = EditorState.create({
@@ -182,6 +192,13 @@ export class Editor {
       extensions: this.buildExtensions(),
     })
     this.view = new EditorView({ state, parent: container })
+    this.enableMarkdown()
+  }
+
+  private enableMarkdown(): void {
+    void loadMarkdownExtension().then((extension) => {
+      this.view.dispatch({ effects: this.langComp.reconfigure(extension) })
+    })
   }
 
   private buildExtensions(): Extension[] {
@@ -195,10 +212,7 @@ export class Editor {
       crosshairCursor(),
       highlightSelectionMatches(),
       EditorView.lineWrapping,
-      markdown({
-        base: markdownLanguage,
-        codeLanguages: languages,
-      }),
+      this.langComp.of([]),
       keymap.of([
         ...defaultKeymap,
         ...historyKeymap,
@@ -260,7 +274,7 @@ export class Editor {
         if (update.selectionSet) {
           const { head } = update.state.selection.main
           const line = update.state.doc.lineAt(head)
-          this.opts.onCursor(line.number, head - line.from)
+          this.opts.onCursor(line.number, head - line.from + 1)
         }
       }),
     ]
@@ -293,6 +307,7 @@ export class Editor {
         extensions: this.buildExtensions(),
       }),
     )
+    this.enableMarkdown()
   }
 
   setSpellcheck(enabled: boolean): void {
@@ -329,10 +344,10 @@ export class Editor {
   }
 
   undo(): void {
-    import('@codemirror/commands').then(({ undo }) => undo(this.view))
+    undo(this.view)
   }
 
   redo(): void {
-    import('@codemirror/commands').then(({ redo }) => redo(this.view))
+    redo(this.view)
   }
 }

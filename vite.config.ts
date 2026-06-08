@@ -9,10 +9,19 @@ export default defineConfig({
         // Split heavy rendering deps into their own chunks so the browser
         // can parse them in parallel with the core editor chunk.
         manualChunks: {
-          katex:   ['katex'],
-          hljs:    ['highlight.js', 'marked-highlight'],
-          relay:   ['@standardnotes/component-relay'],
-        },
+          cmCore: [
+            '@codemirror/commands',
+            '@codemirror/language',
+            '@codemirror/search',
+            '@codemirror/state',
+            '@codemirror/view',
+            '@lezer/highlight',
+          ],
+          cmMarkdown: ['@codemirror/lang-markdown'],
+          markdown: ['marked', 'dompurify'],
+          katex:    ['katex'],
+          relay:    ['@standardnotes/component-relay'],
+        }
       },
     },
   },

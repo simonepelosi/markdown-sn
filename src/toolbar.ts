@@ -36,11 +36,12 @@ type FmtItem = FmtButtonDef | 'sep'
 // ── Toolbar ───────────────────────────────────────────────────────────
 export class Toolbar {
   private editor: Editor | null = null
-  private currentMode: EditorMode = 'split'
+  private currentMode: EditorMode = 'edit'
   private collapsed = false
   private statusBarVisible = false
   private statusBarBtn: HTMLButtonElement | null = null
   private readonly modeButtons: Partial<Record<EditorMode, HTMLButtonElement>> = {}
+  private readonly formatButtons: HTMLButtonElement[] = []
 
   constructor(
     private readonly container: HTMLElement,
@@ -49,9 +50,10 @@ export class Toolbar {
     this.render()
   }
 
-  /** Wire the editor instance once it's ready; buttons are no-ops until then. */
+  /** Wire the editor instance once it's ready; formatting buttons become active. */
   setEditor(editor: Editor): void {
     this.editor = editor
+    for (const btn of this.formatButtons) btn.disabled = false
   }
 
   private makeSep(): HTMLElement {
@@ -62,11 +64,14 @@ export class Toolbar {
 
   private makeFmtButton(def: FmtButtonDef): HTMLButtonElement {
     const btn = document.createElement('button')
+    btn.type = 'button'
     btn.className = 'fmt-btn'
     btn.title = def.title
+    btn.disabled = this.editor === null
     btn.setAttribute('aria-label', def.title)
     btn.innerHTML = def.icon
     btn.addEventListener('click', def.action)
+    this.formatButtons.push(btn)
     return btn
   }
 
@@ -86,10 +91,11 @@ export class Toolbar {
     ]
     for (const [mode, label] of modes) {
       const btn = document.createElement('button')
+      btn.type = 'button'
       btn.className = 'mode-btn'
       btn.textContent = label
       btn.title = `${label} mode`
-      btn.addEventListener('click', () => { this.setMode(mode) })
+      btn.addEventListener('click', () => { this.setMode(mode, true) })
       this.modeButtons[mode] = btn
       modeGroup.appendChild(btn)
     }
@@ -97,7 +103,7 @@ export class Toolbar {
     this.container.appendChild(this.makeSep())
 
     // ── Format buttons ────────────────────────────────────────────────
-    // All editor actions guard with this.editor?.  — no-op before wired.
+    // Disabled until the editor is wired so the toolbar never accepts no-op clicks.
     const items: FmtItem[] = [
       { icon: ICON_BOLD,    title: 'Bold (Ctrl+B)',           action: () => { this.editor?.wrapSelection('**', '**', 'bold text') } },
       { icon: ICON_ITALIC,  title: 'Italic (Ctrl+I)',         action: () => { this.editor?.wrapSelection('_', '_', 'italic text') } },
@@ -129,6 +135,7 @@ export class Toolbar {
 
     // Status bar toggle
     const statusBarBtn = document.createElement('button')
+    statusBarBtn.type = 'button'
     statusBarBtn.className = 'toolbar-icon-btn'
     statusBarBtn.title = 'Toggle word count'
     statusBarBtn.setAttribute('aria-label', 'Toggle word count')
@@ -146,6 +153,7 @@ export class Toolbar {
 
     // Collapse toggle
     const toggleBtn = document.createElement('button')
+    toggleBtn.type = 'button'
     toggleBtn.className = 'toolbar-toggle-btn'
     toggleBtn.title = 'Toggle toolbar'
     toggleBtn.setAttribute('aria-label', 'Toggle toolbar')
@@ -173,10 +181,10 @@ export class Toolbar {
     }
   }
 
-  setMode(mode: EditorMode): void {
+  setMode(mode: EditorMode, notify = false): void {
     this.currentMode = mode
     this.syncModeButtons()
-    this.opts.onModeChange(mode)
+    if (notify) this.opts.onModeChange(mode)
   }
 
   private syncModeButtons(): void {
