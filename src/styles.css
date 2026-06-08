@@ -212,35 +212,56 @@
   --pv-tbl-border: var(--sn-stylekit-border-color,        #3a3a3a);
   --pv-hr:        var(--sn-stylekit-border-color,         #3a3a3a);
 
-  /* Syntax tokens — full Dracula */
-  --syn-h1:     #ff79c6;   /* pink   */
-  --syn-h2:     #bd93f9;   /* purple */
-  --syn-h3:     #8be9fd;   /* cyan   */
-  --syn-h:      #f8f8f2;
-  --syn-strong: #ffffff;
-  --syn-em:     #f1fa8c;   /* yellow */
-  --syn-link:   #8be9fd;   /* cyan   */
-  --syn-code:   #ffb86c;   /* orange */
-  --syn-quote:  #6272a4;
-  --syn-list:   #ffb86c;   /* orange — distinct from purple headings */
-  --syn-meta:   #6272a4;
-  --syn-hr:     #44475a;
-  --syn-fmt:    #6272a4;
-  --syn-punc:   #6272a4;
+  /* Syntax tokens — Dracula/cyberpunk hues, muted for dark readability */
+  --syn-h1:     #f472b6;   /* soft pink */
+  --syn-h2:     #a78bfa;   /* soft purple */
+  --syn-h3:     #67e8f9;   /* soft cyan */
+  --syn-h:      #e5e7eb;
+  --syn-strong: #f8fafc;
+  --syn-em:     #c4b5fd;   /* lavender; calmer than yellow on dark */
+  --syn-link:   #7dd3fc;
+  --syn-code:   #fdba74;
+  --syn-quote:  #94a3b8;
+  --syn-list:   #cbd5e1;
+  --syn-meta:   #64748b;
+  --syn-hr:     #334155;
+  --syn-fmt:    #64748b;
+  --syn-punc:   #64748b;
   /* Embedded fenced-code tokens */
-  --syn-kw:     #ff79c6;   /* keyword  — pink   */
-  --syn-str:    #f1fa8c;   /* string   — yellow */
-  --syn-num:    #bd93f9;   /* number   — purple */
-  --syn-cmt:    #6272a4;   /* comment  — slate  */
-  --syn-fn:     #50fa7b;   /* function — green  */
-  --syn-cls:    #8be9fd;   /* type     — cyan   */
-  --syn-op:     #ff79c6;   /* operator — pink   */
-  --syn-var:    #f8f8f2;
-  --syn-prop:   #8be9fd;
-  --syn-tag:    #ff79c6;
-  --syn-regexp: #ffb86c;
-  --syn-del:    #ff5555;
-  --syn-ins:    #50fa7b;
+  --syn-kw:     #f472b6;
+  --syn-str:    #a7f3d0;
+  --syn-num:    #c4b5fd;
+  --syn-cmt:    #7f8ea3;
+  --syn-fn:     #86efac;
+  --syn-cls:    #67e8f9;
+  --syn-op:     #f472b6;
+  --syn-var:    #e5e7eb;
+  --syn-prop:   #93c5fd;
+  --syn-tag:    #f472b6;
+  --syn-regexp: #fdba74;
+  --syn-del:    #f87171;
+  --syn-ins:    #86efac;
+
+  /* Dark preview code islands: still Dracula/cyberpunk, but less neon than
+   * the light-mode island so long snippets stay readable on dark SN themes. */
+  --code-bg:     #1f2430;
+  --code-fg:     #e5e7eb;
+  --code-border: #3b4252;
+  --code-cmt:    #7f8ea3;
+  --code-kw:     #f472b6;
+  --code-str:    #a7f3d0;
+  --code-num:    #c4b5fd;
+  --code-fn:     #86efac;
+  --code-cls:    #67e8f9;
+  --code-op:     #f472b6;
+  --code-var:    #e5e7eb;
+  --code-prop:   #93c5fd;
+  --code-tag:    #f472b6;
+  --code-attr:   #86efac;
+  --code-regexp: #fdba74;
+  --code-del:    #f87171;
+  --code-ins:    #86efac;
+  --code-punc:   #cbd5e1;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────── */
