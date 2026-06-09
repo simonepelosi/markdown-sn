@@ -49,7 +49,7 @@
   /* Fonts */
   --ed-font: var(--sn-stylekit-sans-serif-font,  ui-sans-serif, system-ui, sans-serif);
   --ed-mono: var(--sn-stylekit-monospace-font,   ui-monospace, 'Cascadia Code', monospace);
-  --ed-size: 15px;
+  --ed-size: 1rem;
 
   /* ── Chrome (toolbar/statusbar) — follows SN theme ────────────────── */
   /* Prefer SN's secondary/contrast layer so the bar reads as chrome; but

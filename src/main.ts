@@ -34,7 +34,7 @@ let toolbar: Toolbar | null = null
 {
   let saved: string | null = null
   try { saved = localStorage.getItem(LS_COLLAPSED) } catch { /* Safari ITP / sandboxed iframe */ }
-  const collapsed = saved !== null ? saved === 'true' : window.matchMedia('(max-width: 680px)').matches
+  const collapsed = saved !== null ? saved === 'true' : false
   let savedStatus: string | null = null
   try { savedStatus = localStorage.getItem(LS_STATUSBAR) } catch { /* ITP */ }
   const statusOn  = savedStatus === 'true'
